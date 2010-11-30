@@ -203,9 +203,12 @@ namespace DeltaZip
             // Free memory
             reference = null;
 
+            ArchiveReader.Stats verficationStats = new ArchiveReader.Stats();
+            Invoke((MethodInvoker)delegate { this.Show(); new ProgressBar(verficationStats).Show(); this.Hide(); });
+
             if (!stats.Canceled && optVerify.Checked) {
                 foreach (string filename in verifycationList) {
-                    if (!ArchiveReader.Extract(filename, null, new ArchiveReader.Stats())) break;
+                    if (!ArchiveReader.Extract(filename, null, verficationStats)) break;
                 }
             }
         }

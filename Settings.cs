@@ -29,9 +29,9 @@ namespace DeltaZip
         public static int SplitterBlockSize = 16 * 1024;
         public static int SplitterReadBufferSize = 1 * 1024 * 1024;
         public static bool AsyncWrite = true;
-        public static int ZipEntrySize = 2 * 1024 * 1024;
+        public static int MaxZipEntrySize = 2 * 1024 * 1024 + 4 * SplitterBlockSize;
         public static int MinSizeForParallelDeflate = 128 * 1024;
-        public static int FileStreamBufferSize = 128 * 1024;
+        public static int FileStreamBufferSize = 64 * 1024;
         public static int MaxQueuedWrites = 8;
         public static int WritePrefetchSize = 64 * 1024 * 1024;
         public static int WriteCacheSize = 512 * 1024 * 1024;

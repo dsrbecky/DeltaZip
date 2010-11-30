@@ -226,6 +226,8 @@ namespace DeltaZip
         static Queue<WeakReference> free = new Queue<WeakReference>();
         static object syncObject = new object();
 
+        static public int Capacity = Settings.MaxZipEntrySize;
+
         public static MemoryStream Allocate()
         {
             lock(syncObject) {
@@ -238,7 +240,7 @@ namespace DeltaZip
                         return stream;
                     }
                 }
-                return new MemoryStream(Settings.ZipEntrySize + 4 * Settings.SplitterBlockSize);
+                return new MemoryStream(Capacity);
             }
         }
 

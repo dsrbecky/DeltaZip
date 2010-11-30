@@ -52,7 +52,7 @@ namespace DeltaZip
                 long writeSpeed = (int)time.TotalSeconds == 0 ? 0 : (stats.ReadFromArchive + stats.ReadFromWorkingCopy) / (int)time.TotalSeconds;
                 labelL1.Text = "Total processed:";          textL1.Text = FormatSize(total);
                 labelL2.Text = "Elapsed time:";             textL2.Text = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
-                labelL3.Text = "Average write speed:";      textL3.Text = FormatSize(writeSpeed) + "/s";
+                labelL3.Text = "Average disk speed:";      textL3.Text = FormatSize(writeSpeed) + "/s";
                 labelR1.Text = "Unmodified:";               textR1.Text = FormatSize(stats.Unmodified, total);
                 labelR2.Text = "Read from archive:";        textR2.Text = FormatSize(stats.ReadFromArchive, total);
                 labelR3.Text = "Read from working copy:";   textR3.Text = FormatSize(stats.ReadFromWorkingCopy, total);

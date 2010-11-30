@@ -93,6 +93,7 @@ namespace DeltaZip
             public WaitHandle AsycDecompress(ZipEntry srcEntry)
             {
                 if (Data == null) {
+                    if (StreamPool.Capacity < srcEntry.UncompressedSize) StreamPool.Capacity = (int)srcEntry.UncompressedSize;
                     this.Data = StreamPool.Allocate();
 
                     // Extract
@@ -356,7 +357,7 @@ namespace DeltaZip
                         }
 
                         // Unload some data if we are running out of memory
-                        while (loaded.Count * Settings.ZipEntrySize > Settings.WriteCacheSize) {
+                        while (loaded.Count * Settings.MaxZipEntrySize > Settings.WriteCacheSize) {
                             ExtractedData maxRef = null;
                             foreach (ExtractedData ed in loaded.Keys) {
                                 if (maxRef == null || ed.Refs[0] > maxRef.Refs[0]) maxRef = ed;

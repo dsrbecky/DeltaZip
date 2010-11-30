@@ -225,7 +225,7 @@ namespace DeltaZip
 
         int WriteToBuffer(Hash hash, Block block)
         {
-            if (WriteBuffer.Length > Settings.ZipEntrySize) {
+            if (WriteBuffer.Length + block.Length > Settings.MaxZipEntrySize) {
                 FlushBuffer(false);
             }
 

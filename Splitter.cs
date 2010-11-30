@@ -67,7 +67,7 @@ namespace DeltaZip
             int totalBlocksLength = 0;
 
             int MinBlockSize = blockSize / 4;
-            int MaxBlockSize = blockSize * 16;
+            int MaxBlockSize = blockSize * 4;
 
             uint hashMark = 0xFFFFFFFF - (0xFFFFFFFF / (uint)blockSize);
             int blockStart = offset;
