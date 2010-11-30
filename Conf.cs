@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -292,7 +291,7 @@ namespace Conf
             } else if (val.IndexOfAny(new char[] { '\r', '\n', '\t', ' ', '#', '\'', '"', '{', '}', '=' }) == -1) {
                 sb.Append(val);
             } else {
-                if (val.Contains('"') && !val.Contains('\'')) {
+                if (val.Contains("\"") && !val.Contains("\'")) {
                     sb.Append('\'');
                     sb.Append(val);
                     sb.Append('\'');

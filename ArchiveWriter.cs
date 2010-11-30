@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
@@ -119,7 +118,10 @@ namespace DeltaZip
                 }
             }
 
-            List<string> exclude = Settings.Exclude.Select(s => s.ToLowerInvariant()).ToList();
+            List<string> exclude = new List<string>();
+            foreach(string ex in Settings.Exclude) {
+                exclude.Add(ex.ToLowerInvariant());
+            }
 
             foreach (string file in files) {
                 if (stats.Canceled) return;
