@@ -39,7 +39,7 @@ namespace DeltaZip
         // Is it worth compressing the data?
         public static bool IsCompressable(MemoryStream stream)
         {
-            if (Settings.Compression == 0)
+            if (Settings.CompressionLevel == 0)
                 return false;
 
             if (stream.Length < 8 * Settings.CompressableTestSkip)
@@ -47,7 +47,7 @@ namespace DeltaZip
 
             long inputSize = 0;
             MemoryStream deflated = new MemoryStream();
-            DeflateStream defStream = new DeflateStream(deflated, CompressionMode.Compress, (CompressionLevel)Settings.Compression, true);
+            DeflateStream defStream = new DeflateStream(deflated, CompressionMode.Compress, (CompressionLevel)Settings.CompressionLevel, true);
             for (int i = 0; i + Settings.CompressableTestSize < stream.Length ;i += Settings.CompressableTestSkip) {
                 inputSize += Settings.CompressableTestSize;
                 defStream.Write(stream.GetBuffer(), i, Settings.CompressableTestSize);

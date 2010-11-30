@@ -297,7 +297,9 @@ namespace DeltaZip
                                     if (openFile != null) openFile.Dispose();
                                     openFile = new FileStream(onDiskHash.File.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, FileOptions.None);
                                     openFilePathLC = onDiskHash.File.NameLowercase;
+                                    System.Diagnostics.Debug.WriteLine("Opening " + onDiskHash.File.NameMixedcase);
                                 }
+                                System.Diagnostics.Debug.WriteLine("Seeking " + (onDiskHash.Offset - openFile.Position));
                                 openFile.Position = onDiskHash.Offset;
                                 openFileRead = openFile.BeginRead(memStream.GetBuffer(), 0, (int)memStream.Length, null, null);
                                 writeQueue.Enqueue(new MemoryStreamRef() {
@@ -347,9 +349,6 @@ namespace DeltaZip
                             waitingForDecompression += 0.01f;
                         }
 
-                        // Verify SHA1
-                        sha1Provider.TransformBlock(writeItem.MemStream.GetBuffer(), (int)writeItem.Offset, writeItem.Length, writeItem.MemStream.GetBuffer(), (int)writeItem.Offset);
-
                         // Write output
                         if (writeEnabled) {
                             workingHashes.Add(new WorkingHash() {
@@ -360,6 +359,9 @@ namespace DeltaZip
 
                             outFile.Write(writeItem.MemStream.GetBuffer(), (int)writeItem.Offset, writeItem.Length);
                         }
+
+                        // Verify SHA1
+                        sha1Provider.TransformBlock(writeItem.MemStream.GetBuffer(), (int)writeItem.Offset, writeItem.Length, writeItem.MemStream.GetBuffer(), (int)writeItem.Offset);
 
                         stats.TotalWritten += writeItem.Length;
 

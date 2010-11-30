@@ -271,7 +271,7 @@ namespace DeltaZip
 
                     zipStream.ParallelDeflateThreshold = entityContent.Length >= Settings.MinSizeForParallelDeflate ? 0 /* on */ : -1 /* off */;
                     ZipEntry entry = zipStream.PutNextEntry(nameWithSuffix);
-                    entry.CompressionLevel = compress ? (CompressionLevel)Settings.Compression : CompressionLevel.None;
+                    entry.CompressionLevel = compress ? (CompressionLevel)Settings.CompressionLevel : CompressionLevel.None;
                     entityContent.Position = 0;
                     entityContent.WriteTo(zipStream);
                     zipStream.Flush();
@@ -308,14 +308,14 @@ namespace DeltaZip
                     Comment = null
                 };
                 ZipEntry entry = zipStream.PutNextEntry(Path.Combine(Settings.MetaDataDir, Settings.MetaDataInfo));
-                entry.CompressionLevel = (CompressionLevel)Settings.Compression;
+                entry.CompressionLevel = (CompressionLevel)Settings.CompressionLevel;
                 new XmlSerializer(typeof(Info)).Serialize(new StreamWriter(zipStream, Encoding.UTF8), info);
             }
 
             // Write file list
             {
                 ZipEntry entry = zipStream.PutNextEntry(Path.Combine(Settings.MetaDataDir, Settings.MetaDataFiles));
-                entry.CompressionLevel = (CompressionLevel)Settings.Compression;
+                entry.CompressionLevel = (CompressionLevel)Settings.CompressionLevel;
                 Util.FileSerializer.Serialize(new StreamWriter(zipStream, Encoding.UTF8), files);
 
                 // Release memory
@@ -333,7 +333,7 @@ namespace DeltaZip
                 Util.WriteArray(memStream, hashesCopy);
 
                 ZipEntry entry = zipStream.PutNextEntry(Path.Combine(Settings.MetaDataDir, Settings.MetaDataHashes));
-                entry.CompressionLevel = Settings.CompressHashes ? (CompressionLevel)Settings.Compression : CompressionLevel.None;
+                entry.CompressionLevel = Settings.CompressHashes ? (CompressionLevel)Settings.CompressionLevel : CompressionLevel.None;
                 memStream.WriteTo(zipStream);
             }
 
@@ -343,7 +343,7 @@ namespace DeltaZip
                 Util.WriteStream(memStream, strings);
 
                 ZipEntry entry = zipStream.PutNextEntry(Path.Combine(Settings.MetaDataDir, Settings.MetaDataStrings));
-                entry.CompressionLevel = (CompressionLevel)Settings.Compression;
+                entry.CompressionLevel = (CompressionLevel)Settings.CompressionLevel;
                 memStream.WriteTo(zipStream);
             }
 
