@@ -26,14 +26,17 @@ namespace DeltaZip
                 extractSrc.Text = Settings.DefaultExtractSrc;
                 // Select the newest file
                 if (Directory.Exists(Settings.DefaultExtractSrc)) {
-                    DateTime newest = DateTime.MinValue;
+                    DateTime newestDate = DateTime.MinValue;
+                    string newestFilename = string.Empty;
                     foreach (string file in Directory.GetFiles(Settings.DefaultExtractSrc, "*" + Settings.ArchiveExtension)) {
                         DateTime date = new FileInfo(file).LastWriteTime;
-                        if (date > newest) {
-                            extractSrc.Text = file;
-                            newest = date;
+                        if (date > newestDate) {
+                            newestFilename = file;
+                            newestDate = date;
                         }
+                        extractSrc.Items.Add(file);
                     }
+                    extractSrc.Text = newestFilename;
                 }
             }
             if (!string.IsNullOrEmpty(Settings.DefaultExtractDst)) {

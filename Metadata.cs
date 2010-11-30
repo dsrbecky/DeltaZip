@@ -296,6 +296,8 @@ namespace DeltaZip
         {
             WorkingCopy wc = new WorkingCopy();
 
+            if (!Directory.Exists(path)) return wc;
+
             string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
             foreach (string filename in files) {
                 FileInfo fileInfo = new FileInfo(filename);

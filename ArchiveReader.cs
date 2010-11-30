@@ -56,7 +56,7 @@ namespace DeltaZip
 
             if (info.ReaderVersion == null) info.ReaderVersion = info.Version;
             if (info.ReaderVersion.Major > Settings.VersionMajor || (info.ReaderVersion.Major == Settings.VersionMajor && info.ReaderVersion.Minor > Settings.VersionMinor)) {
-                throw new Exception("The archive was created by newer version of the program: " + info.ReaderVersion);
+                throw new Exception("The archive was created by newer version of the program: " + info.Version);
             }
 
             hashes  = Util.ReadArray<HashSource>(Util.ExtractMetaData(zipFile, Settings.MetaDataHashes));
@@ -262,6 +262,8 @@ namespace DeltaZip
 
                         // Prefetch
                         for (; p < file.HashIndices.Count; p++) {
+                            if (writeQueue.Count > 0 && writeQueue.Peek().Ready.WaitOne(TimeSpan.Zero)) break; // Some data is ready - go process it
+
                             int prefetchSize = 0;
                             Dictionary<MemoryStream, bool> prefetchedStreams = new Dictionary<MemoryStream, bool>();
                             foreach(MemoryStreamRef memStreamRef in writeQueue) {
@@ -271,8 +273,6 @@ namespace DeltaZip
                                 prefetchSize += (int)prefetchedStream.Length;
                             }
                             if (writeQueue.Count > 0 && prefetchSize > Settings.WritePrefetchSize) break;  // We have prefetched enough data
-
-                            if (writeQueue.Count > 0 && writeQueue.Peek().Ready.WaitOne(TimeSpan.Zero)) break; // Some data is ready - go process it
 
                             HashSource hashSrc = archive.hashes[file.HashIndices[p]];
                             string path = archive.GetString(hashSrc.Path).ToLowerInvariant();
