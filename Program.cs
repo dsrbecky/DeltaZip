@@ -63,11 +63,19 @@ namespace DeltaZip
             string dst = Settings.Dst;
             string refFile = Settings.Ref;
 
+            if (string.IsNullOrEmpty(src)) throw new Exception("You have to specify Src");
+            if (string.IsNullOrEmpty(dst)) throw new Exception("You have to specify Dst");
+
+            // The destination is directory
+            if (!dst.ToLowerInvariant().EndsWith(Settings.ArchiveExtension.ToLowerInvariant())) {
+                dst = Path.Combine(dst, Path.GetFileName(src) + Settings.ArchiveExtension);
+            }
+
             if (Settings.RefRecent) {
                 string dir = Path.GetDirectoryName(dst);
-                DateTime newest = DateTime.MinValue;
-                foreach (string file in Directory.GetFiles(dir, "*" + Settings.ArchiveExtension)) {
-                    if (file.ToLowerInvariant() != dst.ToLowerInvariant()) {
+                if (Directory.Exists(dir)) {
+                    DateTime newest = DateTime.MinValue;
+                    foreach (string file in Directory.GetFiles(dir, "*" + Settings.ArchiveExtension)) {
                         DateTime date = new FileInfo(file).LastWriteTime;
                         if (date > newest) {
                             refFile = file;
@@ -109,6 +117,7 @@ namespace DeltaZip
                 }
             } else {
                 string tmpName = dst + Settings.TmpExtension;
+                Directory.CreateDirectory(Path.GetDirectoryName(tmpName));
                 ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
                 archive.AddDir(src, reference);
                 archive.Finish(dst);
@@ -117,7 +126,13 @@ namespace DeltaZip
                     IOFile.Delete(tmpName);
                 } else {
                     if (IOFile.Exists(dst)) {
-                        IOFile.Delete(dst);
+                        int suffix = 0;
+                        string newDst;
+                        do {
+                            newDst = Path.Combine(Path.GetDirectoryName(dst), Path.GetFileNameWithoutExtension(dst) + (suffix == 0 ? string.Empty : ("-" + suffix.ToString())) + Path.GetExtension(dst));
+                            suffix++;
+                        } while (IOFile.Exists(newDst));
+                        dst = newDst;
                     }
                     IOFile.Move(tmpName, dst);
 

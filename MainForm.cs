@@ -84,17 +84,7 @@ namespace DeltaZip
 
             if (string.IsNullOrEmpty(Settings.Src) || string.IsNullOrEmpty(Settings.Dst)) return;
 
-            if (IOFile.Exists(Settings.Dst)) {
-                if (!ConfimOverride(Settings.Dst)) return;
-                System.IO.File.Delete(Settings.Dst);
-            }
             this.Close();
-        }
-
-        public bool ConfimOverride(string filename)
-        {
-            string msg = "Override " + filename + "?" + Environment.NewLine + Environment.NewLine + "If any other archives reference data in this archive, you will not be able to extract them.";
-            return MessageBox.Show(msg, "File exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
         }
 
         void extractSrcSelect_Click(object sender, EventArgs e)
