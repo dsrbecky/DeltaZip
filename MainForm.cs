@@ -202,19 +202,8 @@ namespace DeltaZip
                 bar.SetStatus("Canceled");
             } else {
                 if (optVerify.Checked) {
-                    bool allOk = true;
                     foreach(string filename in verifycationList) {
-                        allOk = allOk && ArchiveReader.Verify(filename, bar);
-                    }
-                    if (allOk) {
-                        bar.SetStatus("Finished and verified");
-                    } else {
-                        if (bar.Canceled) {
-                            bar.SetStatus("Finished but verification was canceled");
-                        } else {
-                            bar.SetStatus("Verification failed!");
-                            MessageBox.Show("Verification failed!", "Verification", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                        if (!ArchiveReader.Extract(filename, null, bar)) break;
                     }
                 } else {
                     bar.SetStatus("Finished");
@@ -244,7 +233,20 @@ namespace DeltaZip
 
         private void extractBtn_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not implemented");
+            string filename = extractSrc.Text;
+            string destination = extractDst.Text;
+            new Thread(delegate() {
+                Extract(filename, destination);
+            }).Start();
+        }
+
+        void Extract(string filename, string destination)
+        {
+            ProgressBar bar = new ProgressBar();
+            bar.Archive = Path.GetFileName(filename);
+            Invoke((MethodInvoker)delegate { bar.Show(); });
+
+            ArchiveReader.Extract(filename, destination, bar);
         }
 
         private void verifySrcSelect_Click(object sender, EventArgs e)
@@ -270,17 +272,7 @@ namespace DeltaZip
             bar.Archive = Path.GetFileName(filename);
             Invoke((MethodInvoker)delegate { bar.Show(); });
 
-            bool ok = ArchiveReader.Verify(filename, bar);
-            if (ok) {
-                bar.SetStatus("Verification successful");
-            } else {
-                if (bar.Canceled) {
-                    bar.SetStatus("Verification canceled");
-                } else {
-                    bar.SetStatus("Verification failed!");
-                    MessageBox.Show("Verification failed!", "Verification", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            ArchiveReader.Extract(filename, null, bar);
         }
     }
 }

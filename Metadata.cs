@@ -65,9 +65,14 @@ namespace DeltaZip
         public static Hash Compute(Block block)
         {
             SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
-
             byte[] sha1 = sha1Provider.ComputeHash(block.Buffer, block.Offset, block.Length);
+            return new Hash(sha1);
+        }
 
+        public static Hash Compute(byte[] buffer, int offset, int length)
+        {
+            SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
+            byte[] sha1 = sha1Provider.ComputeHash(buffer, offset, length);
             return new Hash(sha1);
         }
 
@@ -79,6 +84,19 @@ namespace DeltaZip
                 this.Part2 = (uint)((sha1[8] << 24) | (sha1[9] << 16) | (sha1[10] << 8) | (sha1[11]));
                 this.Part3 = (uint)((sha1[12] << 24) | (sha1[13] << 16) | (sha1[14] << 8) | (sha1[15]));
                 this.Part4 = (uint)((sha1[16] << 24) | (sha1[17] << 16) | (sha1[18] << 8) | (sha1[19]));
+            }
+        }
+
+        public byte[] ToByteArray()
+        {
+            unchecked {
+                return new byte[] {
+                    (byte)(this.Part0 >> 24), (byte)(this.Part0 >> 16), (byte)(this.Part0 >> 8), (byte)(this.Part0),
+                    (byte)(this.Part1 >> 24), (byte)(this.Part1 >> 16), (byte)(this.Part1 >> 8), (byte)(this.Part1),
+                    (byte)(this.Part2 >> 24), (byte)(this.Part2 >> 16), (byte)(this.Part2 >> 8), (byte)(this.Part2),
+                    (byte)(this.Part3 >> 24), (byte)(this.Part3 >> 16), (byte)(this.Part3 >> 8), (byte)(this.Part3),
+                    (byte)(this.Part4 >> 24), (byte)(this.Part4 >> 16), (byte)(this.Part4 >> 8), (byte)(this.Part4),
+                };
             }
         }
 
@@ -105,5 +123,134 @@ namespace DeltaZip
         {
             return this.Hash.CompareTo(other.Hash);
         }
+    }
+
+    public class WorkingFile
+    {
+        [XmlIgnore]            public string NameLowercase { get { return this.NameMixedcase.ToLowerInvariant(); } }
+        [XmlAttribute("Name")] public string NameMixedcase;
+
+        [XmlAttribute] public long Size;
+        [XmlAttribute] public DateTime Created;
+        [XmlAttribute] public DateTime Modified;
+        [XmlAttribute(DataType = "hexBinary")] public byte[] SHA1;
+
+        [XmlElement(ElementName = "Hash")]
+        public List<WorkingHash> Hashes = new List<WorkingHash>();
+
+        [XmlIgnore] public string TempFileName;
+
+        public bool ExistsOnDisk()
+        {
+            return System.IO.File.Exists(NameLowercase);
+        }
+
+        public bool IsModifiedOnDisk()
+        {
+            FileInfo fi = new FileInfo(NameLowercase);
+            return (fi.Length != Size || fi.CreationTime != Created || fi.LastWriteTime != Modified);
+        }
+    }
+
+    public class WorkingHash
+    {
+        [XmlIgnore]    public Hash Hash;
+        [XmlAttribute] public long Offset;
+        [XmlAttribute] public int Length;
+        [XmlAttribute(DataType = "hexBinary")]
+        public byte[] SHA1
+        {
+            get { return this.Hash.ToByteArray(); }
+            set { this.Hash = new Hash(value); }
+        }
+    }
+
+    public class WorkingCopy
+    {
+        [XmlElement(ElementName = "File")]
+        public List<WorkingFile> Files = new List<WorkingFile>();
+
+        static string StoragePath
+        {
+            get
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                return Path.Combine(Path.Combine(appData, "DeltaZip"), "WorkingCopy.xml");
+            }
+        }
+
+        public void Save()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(StoragePath));
+            using (FileStream writter = new FileStream(StoragePath, FileMode.Create)) {
+                Util.WorkingCopySerializer.Serialize(writter, this);
+            }
+        }
+
+        public static WorkingCopy Load()
+        {
+            if (System.IO.File.Exists(StoragePath)) {
+                try {
+                    using (FileStream reader = new FileStream(StoragePath, FileMode.Open)) {
+                        return (WorkingCopy)Util.WorkingCopySerializer.Deserialize(reader);
+                    }
+                }
+                catch {
+                    return new WorkingCopy();
+                }
+            }
+            else {
+                return new WorkingCopy();
+            }
+        }
+
+        /*
+        public static WorkingCopy HashLocalFiles(string path, WorkingCopy lastWorkingCopy)
+        {
+            WorkingCopy wc = new WorkingCopy();
+
+            string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+            foreach (string filename in files)
+            {
+                FileInfo fileInfo = new FileInfo(filename);
+
+                WorkingFile lastFile = lastWorkingCopy.Files.Find(file => file.Name == filename);
+
+                if (lastFile           != null &&
+                    lastFile.Size      == fileInfo.Length &&
+                    lastFile.Created   == fileInfo.CreationTime &&
+                    lastFile.Modified  == fileInfo.LastWriteTime) {
+                    // Do not rehash - assume it was unchanged
+                    wc.Files.Add(lastFile);
+                } else {
+                    using (FileStream fileStreamIn = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, true)) {
+                        SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
+
+                        WorkingFile file = new WorkingFile() {
+                            Name = filename,
+                            Size = fileInfo.Length,
+                            Created = fileInfo.CreationTime,
+                            Modified = fileInfo.LastWriteTime,
+                            UserFile = true
+                        };
+
+                        long offset = 0;
+                        foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider)) {
+                            WorkingHash hash = new WorkingHash() {
+                                Hash   = Hash.Compute(block),
+                                Length = block.Length,
+                                Offset = offset
+                            };
+                            file.Hashes.Add(hash);
+                            offset += block.Length;
+                        };
+                        file.SHA1 = sha1Provider.Hash;
+                    }
+                }
+            }
+
+            return wc;
+        }
+        */
     }
 }

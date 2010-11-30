@@ -25,6 +25,17 @@ namespace DeltaZip
             }
         }
 
+        static XmlSerializer workingCopySerializer;
+
+        public static XmlSerializer WorkingCopySerializer {
+            get {
+                if (workingCopySerializer == null) {
+                    workingCopySerializer = new XmlSerializer(typeof(WorkingCopy), new XmlRootAttribute("Files"));
+                }
+                return workingCopySerializer;
+            }
+        }
+
         // Is it worth compressing the data?
         public static bool IsCompressable(MemoryStream stream)
         {
