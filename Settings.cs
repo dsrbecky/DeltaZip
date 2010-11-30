@@ -31,8 +31,7 @@ namespace DeltaZip
         public static string Ref;
         public static bool RefRecent;
 
-        public static string DefaultExtractSrc;
-        public static string DefaultExtractDst;
+        public static bool SelectExtractTab;
 
         public static string MessageOfTheDay;
 

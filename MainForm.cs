@@ -21,26 +21,16 @@ namespace DeltaZip
         {
             InitializeComponent();
 
-            if (!string.IsNullOrEmpty(Settings.DefaultExtractSrc)) {
+            if (Settings.SelectExtractTab) {
                 tabControl1.SelectTab(tabPage2);
-                extractSrc.Text = Settings.DefaultExtractSrc;
-                // Select the newest file
-                if (Directory.Exists(Settings.DefaultExtractSrc)) {
-                    DateTime newestDate = DateTime.MinValue;
-                    string newestFilename = string.Empty;
-                    foreach (string file in Directory.GetFiles(Settings.DefaultExtractSrc, "*" + Settings.ArchiveExtension)) {
-                        DateTime date = new FileInfo(file).LastWriteTime;
-                        if (date > newestDate) {
-                            newestFilename = file;
-                            newestDate = date;
-                        }
+                extractSrc.Text = Program.GetMostRecentArchive(Settings.Src);
+                extractDst.Text = Settings.Dst;
+
+                if (!string.IsNullOrEmpty(Settings.Src)) {
+                    foreach (string file in Directory.GetFiles(Path.GetDirectoryName(Settings.Src), "*" + Settings.ArchiveExtension)) {
                         extractSrc.Items.Add(file);
                     }
-                    extractSrc.Text = newestFilename;
                 }
-            }
-            if (!string.IsNullOrEmpty(Settings.DefaultExtractDst)) {
-                extractDst.Text = Settings.DefaultExtractDst;
             }
             labelMOTD.Text = Settings.MessageOfTheDay;
         }

@@ -74,14 +74,7 @@ namespace DeltaZip
             if (Settings.RefRecent) {
                 string dir = Path.GetDirectoryName(dst);
                 if (Directory.Exists(dir)) {
-                    DateTime newest = DateTime.MinValue;
-                    foreach (string file in Directory.GetFiles(dir, "*" + Settings.ArchiveExtension)) {
-                        DateTime date = new FileInfo(file).LastWriteTime;
-                        if (date > newest) {
-                            refFile = file;
-                            newest = date;
-                        }
-                    }
+                    refFile = GetMostRecentArchive(dir);
                 }
             }
 
@@ -160,14 +153,39 @@ namespace DeltaZip
             if (Settings.AutoQuit && allOk) bar.Close();
         }
 
+        public static string GetMostRecentArchive(string path)
+        {
+            if (string.IsNullOrEmpty(path)) {
+                return string.Empty;
+            } else {
+                if (Directory.Exists(path)) {
+                    path = Path.Combine(path, "*");
+                }
+                DateTime newestDate = DateTime.MinValue;
+                string   newestFilename = string.Empty;
+                foreach (string file in Directory.GetFiles(Path.GetDirectoryName(path), Path.GetFileName(path))) {
+                    if (string.Equals(Path.GetExtension(file), Settings.ArchiveExtension, StringComparison.InvariantCultureIgnoreCase)) {
+                        DateTime date = new FileInfo(file).LastWriteTime;
+                        if (date > newestDate) {
+                            newestFilename = file;
+                            newestDate = date;
+                        }
+                    }
+                }
+                return newestFilename;
+            }
+        }
+
         public static void Extract()
         {
             ArchiveReader.Stats stats = new ArchiveReader.Stats();
             ProgressBar bar = new ProgressBar();
             bar.Bind(stats);
 
+            string src = GetMostRecentArchive(Settings.Src);
+
             new Thread((ThreadStart)delegate {
-                ArchiveReader.Extract(Settings.Src, Settings.Dst, stats);
+                ArchiveReader.Extract(src, Settings.Dst, stats);
                 if (Settings.AutoQuit) bar.Close();
             }).Start();
 
