@@ -53,16 +53,16 @@ namespace DeltaZip
                 progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
                 textStatus.Text = stats.Status;
 
-                long total = stats.Unmodified + stats.ReadFromArchive + stats.ReadFromWorkingCopy;
                 TimeSpan time = (stats.EndTime ?? DateTime.Now) - stats.StartTime;
-                long writeSpeed = (int)time.TotalSeconds == 0 ? 0 : (stats.ReadFromArchive + stats.ReadFromWorkingCopy) / (int)time.TotalSeconds;
-                labelL1.Text = "Total processed:";          textL1.Text = FormatSize(total);
+                TimeSpan writeTime = (stats.EndTime ?? DateTime.Now) - (stats.WriteStartTime ?? DateTime.Now);
+                long writeSpeed = (int)writeTime.TotalSeconds == 0 ? 0 : stats.TotalWritten / (int)writeTime.TotalSeconds;
+                labelL1.Text = "Total processed:";          textL1.Text = FormatSize(stats.TotalWritten + stats.Unmodified);
                 labelL2.Text = "Elapsed time:";             textL2.Text = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
-                labelL3.Text = "Average write speed:";      textL3.Text = FormatSize(writeSpeed) + "/s";
+                labelL3.Text = "Average speed:";            textL3.Text = writeSpeed == 0 ? "-" : (FormatSize(writeSpeed) + "/s");
                 labelL4.Text = "";                          textL4.Text = "";
-                labelR1.Text = "Unmodified:";               textR1.Text = FormatSize(stats.Unmodified, total);
-                labelR2.Text = "Read from archive:";        textR2.Text = FormatSize(stats.ReadFromArchive, total);
-                labelR3.Text = "Read from working copy:";   textR3.Text = FormatSize(stats.ReadFromWorkingCopy, total);
+                labelR1.Text = "Unmodified:";               textR1.Text = FormatSize(stats.Unmodified,                stats.Unmodified + stats.ReadFromArchiveCompressed + stats.ReadFromWorkingCopy);
+                labelR2.Text = "Read from archive:";        textR2.Text = FormatSize(stats.ReadFromArchiveCompressed, stats.Unmodified + stats.ReadFromArchiveCompressed + stats.ReadFromWorkingCopy);
+                labelR3.Text = "Read from working copy:";   textR3.Text = FormatSize(stats.ReadFromWorkingCopy,       stats.Unmodified + stats.ReadFromArchiveCompressed + stats.ReadFromWorkingCopy);
                 labelR4.Text = "";                          textR4.Text = "";
 
                 buttonCancel.Enabled = (stats.EndTime == null);

@@ -31,10 +31,13 @@ namespace DeltaZip
             public string Status;
             public float Progress;
             public DateTime StartTime = DateTime.Now;
+            public DateTime? WriteStartTime = null;
             public DateTime? EndTime;
 
+            public long TotalWritten;
             public long Unmodified;
-            public long ReadFromArchive;
+            public long ReadFromArchiveCompressed;
+            public long ReadFromArchiveDecompressed;
             public long ReadFromWorkingCopy;
 
             public volatile bool Canceled;
@@ -72,7 +75,7 @@ namespace DeltaZip
 
         class MemoryStreamRef
         {
-            public ManualResetEvent Ready;
+            public WaitHandle Ready;
             public Hash Hash;
             public MemoryStream MemStream;
             public long Offset;
@@ -148,8 +151,9 @@ namespace DeltaZip
             Dictionary<string, ZipFile> openZips = new Dictionary<string, ZipFile>();
             openZips[archive.ArchiveName.ToLowerInvariant()] = archive.zipFile;
 
-            FileStream openFile = null;
-            string     openFilePathLC = null;
+            FileStream   openFile = null;
+            IAsyncResult openFileRead = null;
+            string       openFilePathLC = null;
 
             // Setup cache
             Dictionary<string, ExtractedData> dataCache = new Dictionary<string, ExtractedData>();
@@ -167,9 +171,16 @@ namespace DeltaZip
             stats.Status = "Loading working copy state";
             WorkingCopy oldWorkingCopy = writeEnabled ? WorkingCopy.Load() : new WorkingCopy();
             WorkingCopy newWorkingCopy = new WorkingCopy();
+            List<WorkingHash> oldValidWorkingHashes = new List<WorkingHash>();
             foreach(WorkingFile wf in oldWorkingCopy.Files) {
-                wf.Hashes.Sort();
+                if (wf.ExistsOnDisk() && !wf.IsModifiedOnDisk()) {
+                    foreach(WorkingHash wh in wf.Hashes) {
+                        wh.File = wf;
+                    }
+                    oldValidWorkingHashes.AddRange(wf.Hashes);
+                }
             }
+            oldValidWorkingHashes.Sort();
 
             string tmpPath = null;
             if (writeEnabled) {
@@ -182,6 +193,7 @@ namespace DeltaZip
             float mbUnloadedDueToMemoryPressure = 0.0f;
 
             stats.Status = writeEnabled ? "Extracting" : "Verifying";
+            stats.WriteStartTime = DateTime.Now;
 
             foreach (File file in archive.files) {
 
@@ -251,43 +263,45 @@ namespace DeltaZip
                             string path = archive.GetString(hashSrc.Path).ToLowerInvariant();
                             ExtractedData data = dataCache[path];
 
-                            // See if we have the hash on disk.  Try out best not to seek too much
+                            // See if we have the hash on disk.  Try our best not to seek too much
                             WorkingHash onDiskHash = null;
-                            WorkingFile onDiskFile = null;
                             long bestSeekDistance = long.MaxValue;
-                            foreach (WorkingFile wf in oldWorkingCopy.Files) {
-                                int idx = wf.Hashes.BinarySearch(new WorkingHash() { Hash = hashSrc.Hash });
-                                if (idx >= 0) {
-                                    while(idx - 1 >= 0 && wf.Hashes[idx - 1].Hash.Equals(hashSrc.Hash)) idx--;
-                                    for (; idx < wf.Hashes.Count && wf.Hashes[idx].Hash.Equals(hashSrc.Hash); idx++) {
-                                        long seekDistance;
-                                        if (openFile != null && openFilePathLC == wf.NameLowercase) {
-                                            seekDistance = Math.Abs(openFile.Position - wf.Hashes[idx].Offset);
-                                        } else {
-                                            seekDistance = long.MaxValue;
-                                        }
-                                        if (onDiskHash == null || seekDistance < bestSeekDistance) {
-                                            onDiskHash = wf.Hashes[idx];
-                                            onDiskFile = wf;
-                                            bestSeekDistance = seekDistance;
-                                        }
+                            int idx = oldValidWorkingHashes.BinarySearch(new WorkingHash() { Hash = hashSrc.Hash });
+                            if (idx >= 0) {
+                                while (idx - 1 >= 0 && oldValidWorkingHashes[idx - 1].Hash.Equals(hashSrc.Hash)) idx--;
+                                for (; idx < oldValidWorkingHashes.Count && oldValidWorkingHashes[idx].Hash.Equals(hashSrc.Hash); idx++) {
+                                    WorkingHash wh = oldValidWorkingHashes[idx];
+                                    long seekDistance;
+                                    if (openFile != null && openFilePathLC == wh.File.NameLowercase) {
+                                        seekDistance = Math.Abs(openFile.Position - wh.Offset);
+                                    } else {
+                                        seekDistance = long.MaxValue;
+                                    }
+                                    if (onDiskHash == null || seekDistance < bestSeekDistance) {
+                                        onDiskHash = wh;
+                                        bestSeekDistance = seekDistance;
                                     }
                                 }
                             }
 
-                            if (onDiskHash != null && ((openFilePathLC == onDiskFile.NameLowercase) || (onDiskFile.ExistsOnDisk() && !onDiskFile.IsModifiedOnDisk()))) {
+                            if (onDiskHash != null && ((openFilePathLC == onDiskHash.File.NameLowercase) || (onDiskHash.File.ExistsOnDisk() && !onDiskHash.File.IsModifiedOnDisk()))) {
                                 MemoryStream memStream = new MemoryStream(onDiskHash.Length);
                                 memStream.SetLength(onDiskHash.Length);
+                                // Finish the last read
+                                if (openFileRead != null) {
+                                    openFile.EndRead(openFileRead);
+                                    openFileRead = null;
+                                }
                                 // Open other file
-                                if (openFilePathLC != onDiskFile.NameLowercase) {
+                                if (openFilePathLC != onDiskHash.File.NameLowercase) {
                                     if (openFile != null) openFile.Dispose();
-                                    openFile = new FileStream(onDiskFile.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize);
-                                    openFilePathLC = onDiskFile.NameLowercase;
+                                    openFile = new FileStream(onDiskHash.File.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, FileOptions.None);
+                                    openFilePathLC = onDiskHash.File.NameLowercase;
                                 }
                                 openFile.Position = onDiskHash.Offset;
-                                openFile.Read(memStream.GetBuffer(), 0, (int)memStream.Length);
+                                openFileRead = openFile.BeginRead(memStream.GetBuffer(), 0, (int)memStream.Length, null, null);
                                 writeQueue.Enqueue(new MemoryStreamRef() {
-                                    Ready     = new ManualResetEvent(true),
+                                    Ready     = openFileRead.AsyncWaitHandle,
                                     MemStream = memStream,
                                     Offset    = 0,
                                     Length    = (int)memStream.Length,
@@ -309,7 +323,11 @@ namespace DeltaZip
                                     pZipEntry = openZips[zipPath][entryPath];
                                 }
 
-                                data.AsycDecompress(pZipEntry);
+                                if (data.Data == null) {
+                                    stats.ReadFromArchiveDecompressed += pZipEntry.UncompressedSize;
+                                    stats.ReadFromArchiveCompressed   += pZipEntry.CompressedSize;
+                                    data.AsycDecompress(pZipEntry);
+                                }
                                 loaded[data] = true;
 
                                 writeQueue.Enqueue(new MemoryStreamRef() {
@@ -320,7 +338,6 @@ namespace DeltaZip
                                     CacheLine = data,
                                     Hash      = hashSrc.Hash
                                 });
-                                stats.ReadFromArchive += hashSrc.Length;
                             }
                         }
 
@@ -343,6 +360,8 @@ namespace DeltaZip
 
                             outFile.Write(writeItem.MemStream.GetBuffer(), (int)writeItem.Offset, writeItem.Length);
                         }
+
+                        stats.TotalWritten += writeItem.Length;
 
                         stats.Progress = (float)i / (float)file.HashIndices.Count;
 
@@ -418,7 +437,8 @@ namespace DeltaZip
             foreach (ZipFile zip in openZips.Values) {
                 zip.Dispose();
             }
-            if (openFile != null) openFile.Dispose();
+            if (openFileRead != null) openFile.EndRead(openFileRead);
+            if (openFile != null)     openFile.Dispose();
 
             // Replace the old working copy with new one
             if (writeEnabled) {

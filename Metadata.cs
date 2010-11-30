@@ -200,6 +200,7 @@ namespace DeltaZip
 
     public class WorkingHash : IComparable<WorkingHash>
     {
+        [XmlIgnore]    public WorkingFile File;
         [XmlIgnore]    public Hash Hash;
         [XmlAttribute] public long Offset;
         [XmlAttribute] public int  Length;
