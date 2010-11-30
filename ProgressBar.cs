@@ -10,14 +10,19 @@ namespace DeltaZip
 {
     public partial class ProgressBar : Form
     {
+        MethodInvoker onTick;
+        MethodInvoker onCancel;
+
         public ProgressBar()
         {
             InitializeComponent();
+            timer1.Tick += delegate { onTick(); };
+            buttonCancel.Click += delegate { onCancel(); };
         }
 
-        public ProgressBar(ArchiveWriter.Stats stats):this()
+        public void Bind(ArchiveWriter.Stats stats)
         {
-            timer1.Tick += delegate {
+            onTick = delegate {
                 this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
                 progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
                 textStatus.Text = stats.Status;
@@ -27,6 +32,7 @@ namespace DeltaZip
                 labelL1.Text = "Total processed:";          textL1.Text = FormatSize(total);
                 labelL2.Text = "Elapsed time:";             textL2.Text = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
                 labelL3.Text = "Block size:";               textL3.Text = FormatSize(Settings.SplitterBlockSize);
+                labelL4.Text = "";                          textL4.Text = "";
                 labelR1.Text = "Compressed size:";          textR1.Text = FormatSize(stats.Compressed, total);
                 labelR2.Text = "Saved by compression:";     textR2.Text = FormatSize(stats.SavedByCompression, total);
                 labelR3.Text = "Saved by internal delta:";  textR3.Text = FormatSize(stats.SavedByInternalDelta, total);
@@ -34,15 +40,15 @@ namespace DeltaZip
 
                 buttonCancel.Enabled = (stats.EndTime == null);
             };
-            buttonCancel.Click += delegate {
+            onCancel = delegate {
                 stats.Canceled = true;
                 stats.EndTime  = DateTime.Now;
             };
         }
 
-        public ProgressBar(ArchiveReader.Stats stats):this()
+        public void Bind(ArchiveReader.Stats stats)
         {
-            timer1.Tick += delegate {
+            onTick = delegate {
                 this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
                 progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
                 textStatus.Text = stats.Status;
@@ -52,14 +58,16 @@ namespace DeltaZip
                 long writeSpeed = (int)time.TotalSeconds == 0 ? 0 : (stats.ReadFromArchive + stats.ReadFromWorkingCopy) / (int)time.TotalSeconds;
                 labelL1.Text = "Total processed:";          textL1.Text = FormatSize(total);
                 labelL2.Text = "Elapsed time:";             textL2.Text = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
-                labelL3.Text = "Average disk speed:";      textL3.Text = FormatSize(writeSpeed) + "/s";
+                labelL3.Text = "Average write speed:";      textL3.Text = FormatSize(writeSpeed) + "/s";
+                labelL4.Text = "";                          textL4.Text = "";
                 labelR1.Text = "Unmodified:";               textR1.Text = FormatSize(stats.Unmodified, total);
                 labelR2.Text = "Read from archive:";        textR2.Text = FormatSize(stats.ReadFromArchive, total);
                 labelR3.Text = "Read from working copy:";   textR3.Text = FormatSize(stats.ReadFromWorkingCopy, total);
+                labelR4.Text = "";                          textR4.Text = "";
 
                 buttonCancel.Enabled = (stats.EndTime == null);
             };
-            buttonCancel.Click += delegate {
+            onCancel = delegate {
                 stats.Canceled = true;
                 stats.EndTime  = DateTime.Now;
             };
@@ -88,7 +96,12 @@ namespace DeltaZip
 
         private void ProgressBar_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit();
+
+        }
+
+        public new void Close()
+        {
+            this.BeginInvoke((MethodInvoker)delegate { base.Close(); });
         }
     }
 }

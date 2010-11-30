@@ -511,16 +511,16 @@ namespace DeltaZip
                         }
                     }
                 }
-            }
 
-            stats.Status = "Deleting temporary directory";
-            try {
-                if (Directory.Exists(tmpPath)) Directory.Delete(tmpPath, true);
-            } catch {
-            }
+                stats.Status = "Deleting temporary directory";
+                try {
+                    if (Directory.Exists(tmpPath)) Directory.Delete(tmpPath, true);
+                } catch {
+                }
 
-            stats.Status = "Saving working copy state";
-            newWorkingCopy.Save();
+                stats.Status = "Saving working copy state";
+                newWorkingCopy.Save();
+            }
 
             stats.EndTime = DateTime.Now;
             if (writeEnabled) {

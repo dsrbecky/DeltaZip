@@ -224,7 +224,6 @@
             this.createRefAuto.TabIndex = 9;
             this.createRefAuto.Text = "Automatically add most recent archive as reference";
             this.createRefAuto.UseVisualStyleBackColor = true;
-            this.createRefAuto.CheckedChanged += new System.EventHandler(this.refsAuto_CheckedChanged);
             // 
             // tabPage2
             // 

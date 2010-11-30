@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveReader.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="lib\DotNetZip\Zip\ComHelper.cs" />
     <Compile Include="lib\DotNetZip\Zip\EncryptionAlgorithm.cs" />
     <Compile Include="lib\DotNetZip\Zip\Events.cs" />

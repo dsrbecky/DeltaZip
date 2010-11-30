@@ -7,10 +7,18 @@ namespace DeltaZip
 {
     class Settings
     {
-        static Settings()
-        {
-            Conf.Deserializer.LoadAppConfig<Settings>();
-        }
+        public static bool Create;
+        public static bool CreateMulti;
+        public static bool Extract;
+        public static bool Verify;
+        public static bool AutoQuit;
+
+        public static string Src;
+        public static string Dst;
+        public static string Ref;
+        public static bool RefRecent;
+
+        public static string[] Exclude = { };
 
         public const int VersionMajor = 1;
         public const int VersionMinor = 0;
@@ -37,6 +45,5 @@ namespace DeltaZip
         public static int WriteCacheSize = 512 * 1024 * 1024;
         public static int CompressableTestSize = 512;
         public static int CompressableTestSkip = 32 * 512;
-        public static string[] Exclude = {};
     }
 }

@@ -323,16 +323,26 @@ namespace Conf
         public static void Deserialize<T>(List<Node> from, T to)
         {
             foreach (Node node in from) {
-                FieldInfo field = typeof(T).GetField(node.Value, BindingFlags.Public | BindingFlags.Static);
+                string name = node.Value.TrimStart('-');
+                FieldInfo field = typeof(T).GetField(name, BindingFlags.Public | BindingFlags.Static);
                 if (field != null) {
                     if (field.FieldType == typeof(TimeSpan)) {
                         TimeSpan val;
                         TimeSpan.TryParse(node.Children[0].Value, out val);
                         field.SetValue(null, val);
+                    } else if (field.FieldType == typeof(bool) && (node.Children == null || node.Children.Count == 0)) {
+                        field.SetValue(null, true);
                     } else {
                         object val = Convert.ChangeType(node.Children[0].Value, field.FieldType);
                         field.SetValue(null, val);
                     }
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    foreach(FieldInfo fi in typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static)) {
+                        sb.Append(fi.Name);
+                        sb.Append(" ");
+                    }
+                    throw new Exception("Unknown option: " + name + Environment.NewLine + "Valid options: " + sb.ToString());
                 }
             }
         }
