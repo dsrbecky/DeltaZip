@@ -28,6 +28,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProgressBar));
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.textStatus = new System.Windows.Forms.Label();
             this.buttonCancel = new System.Windows.Forms.Button();
@@ -255,6 +256,7 @@
             this.Controls.Add(this.textStatus);
             this.Controls.Add(this.progressBar1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "ProgressBar";
             this.Text = "0%";

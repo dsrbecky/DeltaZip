@@ -58,6 +58,7 @@
             this.verifySrc = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.verifySrcSelect = new System.Windows.Forms.Button();
+            this.labelMOTD = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -249,6 +250,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.labelMOTD);
             this.tabPage2.Controls.Add(this.extractDst);
             this.tabPage2.Controls.Add(this.extractBtn);
             this.tabPage2.Controls.Add(this.extractSrc);
@@ -389,6 +391,17 @@
             this.verifySrcSelect.UseVisualStyleBackColor = true;
             this.verifySrcSelect.Click += new System.EventHandler(this.verifySrcSelect_Click);
             // 
+            // labelMOTD
+            // 
+            this.labelMOTD.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelMOTD.Location = new System.Drawing.Point(10, 66);
+            this.labelMOTD.Name = "labelMOTD";
+            this.labelMOTD.Size = new System.Drawing.Size(594, 143);
+            this.labelMOTD.TabIndex = 15;
+            this.labelMOTD.Text = "Destination:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -440,6 +453,7 @@
         private System.Windows.Forms.Button verifySrcSelect;
         private System.Windows.Forms.ComboBox createRef;
         private System.Windows.Forms.Button createRefSelect;
+        private System.Windows.Forms.Label labelMOTD;
 
 
     }

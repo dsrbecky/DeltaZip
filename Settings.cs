@@ -33,6 +33,8 @@ namespace DeltaZip
         public static string DefaultExtractSrc;
         public static string DefaultExtractDst;
 
+        public static string MessageOfTheDay;
+
         public static string[] Exclude = { };
 
         public static int   CompressionLevel = 5;

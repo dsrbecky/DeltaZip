@@ -39,11 +39,13 @@ namespace DeltaZip
             if (!string.IsNullOrEmpty(Settings.DefaultExtractDst)) {
                 extractDst.Text = Settings.DefaultExtractDst;
             }
+            labelMOTD.Text = Settings.MessageOfTheDay;
         }
 
         private void createSrcSelect_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog dirDialog = new FolderBrowserDialog();
+            dirDialog.SelectedPath = createSrc.Text;
             if (dirDialog.ShowDialog() == DialogResult.OK) {
                 createSrc.Text = dirDialog.SelectedPath;
                 if (string.IsNullOrEmpty(createDst.Text)) {
@@ -56,11 +58,13 @@ namespace DeltaZip
         {
             if (optMulti.Checked) {
                 FolderBrowserDialog dirDialog = new FolderBrowserDialog();
+                dirDialog.SelectedPath = createDst.Text;
                 if (dirDialog.ShowDialog() == DialogResult.OK) {
                     createDst.Text = dirDialog.SelectedPath + Path.DirectorySeparatorChar;
                 }
             } else {
                 SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.FileName = createDst.Text;
                 saveDialog.Filter = Filter;
                 if (saveDialog.ShowDialog() == DialogResult.OK) {
                     createDst.Text = saveDialog.FileName;
@@ -71,6 +75,7 @@ namespace DeltaZip
         private void createRefSelect_Click(object sender, EventArgs e)
         {
             OpenFileDialog openDlg = new OpenFileDialog();
+            openDlg.FileName = createRef.Text;
             openDlg.Filter = Filter;
             if (openDlg.ShowDialog() == DialogResult.OK) {
                 createRef.Text = openDlg.FileName;
@@ -109,6 +114,7 @@ namespace DeltaZip
         void extractSrcSelect_Click(object sender, EventArgs e)
         {
             OpenFileDialog openDlg = new OpenFileDialog();
+            openDlg.FileName = extractSrc.Text;
             openDlg.Filter = Filter;
             if (openDlg.ShowDialog() == DialogResult.OK) {
                 extractSrc.Text = openDlg.FileName;
@@ -121,6 +127,7 @@ namespace DeltaZip
         void extractDstSelect_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog dirDialog = new FolderBrowserDialog();
+            dirDialog.SelectedPath = extractDst.Text;
             if (dirDialog.ShowDialog() == DialogResult.OK) {
                 extractDst.Text = dirDialog.SelectedPath;
             }
