@@ -29,10 +29,14 @@ namespace DeltaZip
         public static string Ref;
         public static bool RefRecent;
 
+        public static string DefaultExtractSrc;
+        public static string DefaultExtractDst;
+
         public static string[] Exclude = { };
 
         public static int   CompressionLevel = 5;
         public static float CompressionTreshold = 0.80f;
+        public static int   CompressionMinSize = 64 * 1024;
         public static bool  CompressHashes = false;
         public static int   CompressableTestSize = 512;
         public static int   CompressableTestSkip = 32 * 512;

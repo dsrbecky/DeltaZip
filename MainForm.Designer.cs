@@ -30,6 +30,8 @@
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.createRef = new System.Windows.Forms.ComboBox();
+            this.createRefSelect = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.optMulti = new System.Windows.Forms.CheckBox();
             this.createBtn = new System.Windows.Forms.Button();
@@ -55,8 +57,6 @@
             this.verifySrc = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.verifySrcSelect = new System.Windows.Forms.Button();
-            this.createRef = new System.Windows.Forms.ComboBox();
-            this.createRefSelect = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -74,7 +74,7 @@
             this.tabControl1.Location = new System.Drawing.Point(8, 8);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(542, 238);
+            this.tabControl1.Size = new System.Drawing.Size(630, 238);
             this.tabControl1.TabIndex = 3;
             // 
             // tabPage1
@@ -96,10 +96,31 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(534, 212);
+            this.tabPage1.Size = new System.Drawing.Size(622, 212);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Create archive";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // createRef
+            // 
+            this.createRef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.createRef.FormattingEnabled = true;
+            this.createRef.Location = new System.Drawing.Point(75, 58);
+            this.createRef.Name = "createRef";
+            this.createRef.Size = new System.Drawing.Size(424, 21);
+            this.createRef.TabIndex = 18;
+            // 
+            // createRefSelect
+            // 
+            this.createRefSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.createRefSelect.Location = new System.Drawing.Point(499, 57);
+            this.createRefSelect.Name = "createRefSelect";
+            this.createRefSelect.Size = new System.Drawing.Size(24, 23);
+            this.createRefSelect.TabIndex = 17;
+            this.createRefSelect.Text = "...";
+            this.createRefSelect.UseVisualStyleBackColor = true;
+            this.createRefSelect.Click += new System.EventHandler(this.createRefSelect_Click);
             // 
             // label1
             // 
@@ -124,7 +145,7 @@
             // createBtn
             // 
             this.createBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createBtn.Location = new System.Drawing.Point(441, 5);
+            this.createBtn.Location = new System.Drawing.Point(529, 5);
             this.createBtn.Name = "createBtn";
             this.createBtn.Size = new System.Drawing.Size(75, 23);
             this.createBtn.TabIndex = 0;
@@ -147,7 +168,7 @@
             // createSrcSelect
             // 
             this.createSrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createSrcSelect.Location = new System.Drawing.Point(411, 5);
+            this.createSrcSelect.Location = new System.Drawing.Point(499, 5);
             this.createSrcSelect.Name = "createSrcSelect";
             this.createSrcSelect.Size = new System.Drawing.Size(24, 23);
             this.createSrcSelect.TabIndex = 3;
@@ -180,13 +201,13 @@
             this.createDst.FormattingEnabled = true;
             this.createDst.Location = new System.Drawing.Point(75, 32);
             this.createDst.Name = "createDst";
-            this.createDst.Size = new System.Drawing.Size(336, 21);
+            this.createDst.Size = new System.Drawing.Size(424, 21);
             this.createDst.TabIndex = 13;
             // 
             // createDstSelect
             // 
             this.createDstSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createDstSelect.Location = new System.Drawing.Point(411, 31);
+            this.createDstSelect.Location = new System.Drawing.Point(499, 31);
             this.createDstSelect.Name = "createDstSelect";
             this.createDstSelect.Size = new System.Drawing.Size(24, 23);
             this.createDstSelect.TabIndex = 6;
@@ -201,7 +222,7 @@
             this.createSrc.FormattingEnabled = true;
             this.createSrc.Location = new System.Drawing.Point(75, 6);
             this.createSrc.Name = "createSrc";
-            this.createSrc.Size = new System.Drawing.Size(336, 21);
+            this.createSrc.Size = new System.Drawing.Size(424, 21);
             this.createSrc.TabIndex = 12;
             // 
             // label3
@@ -213,13 +234,13 @@
             this.label3.TabIndex = 7;
             this.label3.Text = "Refernce:";
             // 
-            // refsAuto
+            // createRefAuto
             // 
             this.createRefAuto.AutoSize = true;
             this.createRefAuto.Checked = true;
             this.createRefAuto.CheckState = System.Windows.Forms.CheckState.Checked;
             this.createRefAuto.Location = new System.Drawing.Point(75, 88);
-            this.createRefAuto.Name = "refsAuto";
+            this.createRefAuto.Name = "createRefAuto";
             this.createRefAuto.Size = new System.Drawing.Size(267, 17);
             this.createRefAuto.TabIndex = 9;
             this.createRefAuto.Text = "Automatically add most recent archive as reference";
@@ -367,32 +388,11 @@
             this.verifySrcSelect.UseVisualStyleBackColor = true;
             this.verifySrcSelect.Click += new System.EventHandler(this.verifySrcSelect_Click);
             // 
-            // createRef
-            // 
-            this.createRef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.createRef.FormattingEnabled = true;
-            this.createRef.Location = new System.Drawing.Point(75, 58);
-            this.createRef.Name = "createRef";
-            this.createRef.Size = new System.Drawing.Size(336, 21);
-            this.createRef.TabIndex = 18;
-            // 
-            // createRefSelect
-            // 
-            this.createRefSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createRefSelect.Location = new System.Drawing.Point(411, 57);
-            this.createRefSelect.Name = "createRefSelect";
-            this.createRefSelect.Size = new System.Drawing.Size(24, 23);
-            this.createRefSelect.TabIndex = 17;
-            this.createRefSelect.Text = "...";
-            this.createRefSelect.UseVisualStyleBackColor = true;
-            this.createRefSelect.Click += new System.EventHandler(this.createRefSelect_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(557, 254);
+            this.ClientSize = new System.Drawing.Size(645, 254);
             this.Controls.Add(this.tabControl1);
             this.Name = "MainForm";
             this.Text = "Delta Zip";

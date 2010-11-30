@@ -266,7 +266,7 @@ namespace DeltaZip
                 this.WriteBuffer = StreamPool.Allocate();
 
                 MethodInvoker writeMethod = delegate {
-                    bool compress = Util.IsCompressable(entityContent);
+                    bool compress = entityContent.Length > Settings.CompressionMinSize && Util.IsCompressable(entityContent);
                     long oldCompressedSize = baseStream.Position;
 
                     zipStream.ParallelDeflateThreshold = entityContent.Length >= Settings.MinSizeForParallelDeflate ? 0 /* on */ : -1 /* off */;

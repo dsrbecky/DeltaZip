@@ -297,10 +297,11 @@ namespace DeltaZip
                                     if (openFile != null) openFile.Dispose();
                                     openFile = new FileStream(onDiskHash.File.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, FileOptions.None);
                                     openFilePathLC = onDiskHash.File.NameLowercase;
-                                    System.Diagnostics.Debug.WriteLine("Opening " + onDiskHash.File.NameMixedcase);
+                                    System.Diagnostics.Debug.Write(Path.GetFileName(onDiskHash.File.NameMixedcase));
                                 }
-                                System.Diagnostics.Debug.WriteLine("Seeking " + (onDiskHash.Offset - openFile.Position));
-                                openFile.Position = onDiskHash.Offset;
+                                System.Diagnostics.Debug.Write(onDiskHash.Offset == openFile.Position ? "." : "S");
+                                if (openFile.Position != onDiskHash.Offset)
+                                    openFile.Position = onDiskHash.Offset;
                                 openFileRead = openFile.BeginRead(memStream.GetBuffer(), 0, (int)memStream.Length, null, null);
                                 writeQueue.Enqueue(new MemoryStreamRef() {
                                     Ready     = openFileRead.AsyncWaitHandle,

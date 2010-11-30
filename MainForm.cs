@@ -20,6 +20,25 @@ namespace DeltaZip
         public MainForm()
         {
             InitializeComponent();
+
+            if (!string.IsNullOrEmpty(Settings.DefaultExtractSrc)) {
+                tabControl1.SelectTab(tabPage2);
+                extractSrc.Text = Settings.DefaultExtractSrc;
+                // Select the newest file
+                if (Directory.Exists(Settings.DefaultExtractSrc)) {
+                    DateTime newest = DateTime.MinValue;
+                    foreach (string file in Directory.GetFiles(Settings.DefaultExtractSrc, "*" + Settings.ArchiveExtension)) {
+                        DateTime date = new FileInfo(file).LastWriteTime;
+                        if (date > newest) {
+                            extractSrc.Text = file;
+                            newest = date;
+                        }
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(Settings.DefaultExtractDst)) {
+                extractDst.Text = Settings.DefaultExtractDst;
+            }
         }
 
         private void createSrcSelect_Click(object sender, EventArgs e)
