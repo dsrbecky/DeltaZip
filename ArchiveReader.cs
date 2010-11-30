@@ -168,24 +168,28 @@ namespace DeltaZip
                 }
             }
 
-            string stateFile = Path.Combine(destination, Settings.StateFile);
+            string stateFile = writeEnabled ? Path.Combine(destination, Settings.StateFile) : null;
 
             stats.Status = "Loading working copy state";
             WorkingCopy workingCopy = writeEnabled ? WorkingCopy.Load(stateFile) : new WorkingCopy();
             List<WorkingFile> newWorkingFiles = new List<WorkingFile>();
             List<WorkingHash> oldWorkingHashes = new List<WorkingHash>();
-            workingCopy = WorkingCopy.HashLocalFiles(destination, stats, workingCopy);
-            foreach(WorkingFile wf in workingCopy.Files) {
+            if (writeEnabled) {
+                int oldCount = workingCopy.Count;
+                workingCopy = WorkingCopy.HashLocalFiles(destination, stats, workingCopy);
+                if (workingCopy.Count > oldCount) {
+                    stats.Status = "Saving working copy state";
+                    workingCopy.Save(stateFile);
+                }
+            }
+            foreach(WorkingFile wf in workingCopy.GetAll()) {
                 foreach(WorkingHash wh in wf.Hashes) {
                     wh.File = wf;
                 }
                 oldWorkingHashes.AddRange(wf.Hashes);
             }
             oldWorkingHashes.Sort();
-
-            // Save the result of the hashing work
-            stats.Status = "Saving working copy state";
-            workingCopy.Save(stateFile);
+            if (stats.Canceled) return false;
 
             string tmpPath = null;
             if (writeEnabled) {
@@ -206,12 +210,13 @@ namespace DeltaZip
                 FileStream outFile = null;             
 
                 if (writeEnabled) {
-
                     // Quickpath - see if the file exists and has correct content
-                    WorkingFile workingFile = workingCopy.Files.Find(f => f.NameLowercase == Path.Combine(destination, file.Name).ToLowerInvariant());
+                    WorkingFile workingFile = workingCopy.Find(Path.Combine(destination, file.Name));
                     if (workingFile != null && workingFile.ExistsOnDisk() && !workingFile.IsModifiedOnDisk()) {
                         if (new Hash(workingFile.Hash).CompareTo(new Hash(file.Hash)) == 0) {
                             // The file is already there - no need to extract it
+                            stats.Status = "Skipped " + file.Name;
+                            workingFile.UserModified = false;
                             newWorkingFiles.Add(workingFile);
                             stats.Unmodified += file.Size;
                             continue;
@@ -298,7 +303,7 @@ namespace DeltaZip
                                 }
                                 // Open other file
                                 if (openFilePathLC != onDiskHash.File.NameLowercase) {
-                                    if (openFile != null) openFile.Dispose();
+                                    if (openFile != null) openFile.Close();
                                     openFile = new FileStream(onDiskHash.File.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, FileOptions.None);
                                     openFilePathLC = onDiskHash.File.NameLowercase;
                                     System.Diagnostics.Debug.Write(Path.GetFileName(onDiskHash.File.NameMixedcase));
@@ -409,7 +414,7 @@ namespace DeltaZip
                     byte[] sha1 = sha1Provider.Hash;
 
                     if (new Hash(sha1).CompareTo(new Hash(file.Hash)) != 0) {
-                        MessageBox.Show("The checksum of " + file.Name + " does not match original value.  The file is corrupted.", "Critical error", MessageBoxButtons.OK);
+                        MessageBox.Show("The checksum of " + file.Name + " does not match original value.  The file is corrupted.", "Critical error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         if (writeEnabled) {
                             stats.Status = "Extraction failed.  Checksum mismatch.";
                         } else {
@@ -419,7 +424,7 @@ namespace DeltaZip
                     }
 
                 } finally {
-                    if (outFile != null) outFile.Dispose();
+                    if (outFile != null) outFile.Close();
                 }
 
                 if (writeEnabled) {
@@ -445,7 +450,7 @@ namespace DeltaZip
                 zip.Dispose();
             }
             if (openFileRead != null) openFile.EndRead(openFileRead);
-            if (openFile != null)     openFile.Dispose();
+            if (openFile != null)     openFile.Close();
 
             // Replace the old working copy with new one
             if (writeEnabled) {
@@ -453,10 +458,10 @@ namespace DeltaZip
                 List<string> deleteFilesAskLC = new List<string>();
                 List<string> keepFilesLC = new List<string>();
 
-                stats.Status = "Looking for local modifications";
+                stats.Status = "Preparing to move files";
 
                 // Delete all non-modified files which are not part of the new set
-                foreach (WorkingFile workingFile in workingCopy.Files) {
+                foreach (WorkingFile workingFile in workingCopy.GetAll()) {
                     if (!workingFile.UserModified && !newWorkingFiles.Contains(workingFile)) {
                         deleteFilesLC.Add(workingFile.NameLowercase);
                     }
@@ -472,8 +477,15 @@ namespace DeltaZip
                 // Ask the user for permission to delete
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Do you want to override local changes in the following files?");
+                int numLines = 0;
                 foreach (string deleteFileAskLC in deleteFilesAskLC) {
                     sb.AppendLine(deleteFileAskLC);
+                    numLines++;
+                    if (numLines > 30) {
+                        sb.AppendLine("...");
+                        sb.AppendLine("(" + deleteFilesAskLC.Count + " files in total)");
+                        break;
+                    }
                 }
                 if (deleteFilesAskLC.Count > 0) {
                     DialogResult overrideAnswer = MessageBox.Show(sb.ToString(), "Override files", MessageBoxButtons.YesNoCancel);
@@ -495,7 +507,7 @@ namespace DeltaZip
                     while (true) {
                         try {
                             System.IO.File.Delete(deleteFileLC);
-                            workingCopy.Files.RemoveAll(f => f.NameLowercase == deleteFileLC);
+                            workingCopy.Remove(deleteFileLC);
                             break;
                         } catch (Exception e) {
                             DialogResult deleteAnswer = MessageBox.Show("Can not delete file " + deleteFileLC + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
@@ -517,7 +529,7 @@ namespace DeltaZip
                             try {
                                 Directory.CreateDirectory(Path.GetDirectoryName(newWorkingFile.NameMixedcase));
                                 System.IO.File.Move(newWorkingFile.TempFileName, newWorkingFile.NameMixedcase);
-                                workingCopy.Files.Add(newWorkingFile);
+                                workingCopy.Add(newWorkingFile);
                                 break;
                             } catch (Exception e) {
                                 DialogResult moveAnswer = MessageBox.Show("Error when moving " + newWorkingFile.TempFileName + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);

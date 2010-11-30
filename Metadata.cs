@@ -225,15 +225,50 @@ namespace DeltaZip
     public class WorkingCopy
     {
         [XmlElement(ElementName = "File")]
-        public List<WorkingFile> Files = new List<WorkingFile>();
+        Dictionary<string, WorkingFile> Files = new Dictionary<string, WorkingFile>();
+
+        public int Count { get { return Files.Count; } }
+        
+        public void Add(WorkingFile wf)
+        {
+            Files.Add(wf.NameLowercase, wf);
+        }
+
+        public void Remove(string path)
+        {
+            Files.Remove(path.ToLowerInvariant());
+        }
+
+        public bool Contains(string path)
+        {
+            return Files.ContainsKey(path.ToLowerInvariant());
+        }
+
+        public WorkingFile Find(string path)
+        {
+            WorkingFile wf;
+            if (Files.TryGetValue(path.ToLowerInvariant(), out wf)) return wf;
+            return null;
+        }
+
+        public IEnumerable<WorkingFile> GetAll()
+        {
+            return Files.Values;
+        }
 
         public static WorkingCopy Load(string path)
         {
             if (System.IO.File.Exists(path)) {
                 try {
                     using (FileStream reader = new FileStream(path, FileMode.Open)) {
-                        Stream deflate = new System.IO.Compression.DeflateStream(reader, System.IO.Compression.CompressionMode.Decompress, true);
-                        return (WorkingCopy)Util.WorkingCopySerializer.Deserialize(deflate);
+                        using (Stream deflate = new System.IO.Compression.DeflateStream(reader, System.IO.Compression.CompressionMode.Decompress, true)) {
+                            List<WorkingFile> list = (List<WorkingFile>)Util.WorkingCopySerializer.Deserialize(deflate);
+                            WorkingCopy wc = new WorkingCopy();
+                            foreach (WorkingFile wf in list) {
+                                wc.Add(wf);
+                            }
+                            return wc;
+                        }
                     }
                 } catch {
                     return new WorkingCopy();
@@ -246,9 +281,14 @@ namespace DeltaZip
         public void Save(string path)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
+            List<WorkingFile> list = new List<WorkingFile>();
+            foreach (WorkingFile wf in Files.Values) {
+                list.Add(wf);
+            }
             using (FileStream writter = new FileStream(path, FileMode.Create)) {
-                Stream deflate = new System.IO.Compression.DeflateStream(writter, System.IO.Compression.CompressionMode.Compress, true);
-                Util.WorkingCopySerializer.Serialize(deflate, this);
+                using (Stream deflate = new System.IO.Compression.DeflateStream(writter, System.IO.Compression.CompressionMode.Compress, true)) {
+                    Util.WorkingCopySerializer.Serialize(deflate, list);
+                }
             }
         }
 
@@ -260,12 +300,17 @@ namespace DeltaZip
             foreach (string filename in files) {
                 FileInfo fileInfo = new FileInfo(filename);
 
-                WorkingFile lastFile = lastWorkingCopy.Files.Find(file => file.NameLowercase == filename.ToLowerInvariant());
+                if (filename.ToLowerInvariant() == Path.Combine(path, Settings.StateFile).ToLowerInvariant())
+                    continue;
+
+                WorkingFile lastFile = lastWorkingCopy.Find(filename);
+
+                stats.Status = "Checking " + Path.GetFileName(filename);
 
                 if (lastFile != null && !lastFile.IsModifiedOnDisk()) {
-                    wc.Files.Add(lastFile);
+                    wc.Add(lastFile);
                 } else {
-                    stats.Status = "Hashing " + Path.GetFileName(filename);
+                    stats.Status = "Hashing local file " + Path.GetFileName(filename);
                     using (FileStream fileStreamIn = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, true)) {
                         SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
 
@@ -277,18 +322,34 @@ namespace DeltaZip
                             UserModified = true
                         };
 
+                        List<WaitHandle> hashOps = new List<WaitHandle>();
+
                         long offset = 0;
-                        foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider)) {
+                        foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider, true)) {
+                            if (stats.Canceled) {
+                                stats.Canceled = false;
+                                return lastWorkingCopy;
+                            }
                             WorkingHash hash = new WorkingHash() {
-                                Hash   = Hash.Compute(block),
                                 Length = block.Length,
                                 Offset = offset
                             };
+                            ManualResetEvent done = new ManualResetEvent(false);
+                            hashOps.Add(done);
+                            Block blockCopy = block;
+                            ThreadPool.QueueUserWorkItem(delegate {
+                                hash.Hash = Hash.Compute(blockCopy);
+                                done.Set();
+                            });
                             file.Hashes.Add(hash);
                             offset += block.Length;
                             stats.Progress = (float)offset / (float)file.Size;
                         };
+
+                        foreach (WaitHandle hashOp in hashOps) hashOp.WaitOne();
+
                         file.Hash = sha1Provider.Hash;
+                        wc.Add(file);
                     }
                 }
             }

@@ -30,7 +30,7 @@ namespace DeltaZip
         public static XmlSerializer WorkingCopySerializer {
             get {
                 if (workingCopySerializer == null) {
-                    workingCopySerializer = new XmlSerializer(typeof(WorkingCopy), new XmlRootAttribute("Files"));
+                    workingCopySerializer = new XmlSerializer(typeof(List<WorkingFile>), new XmlRootAttribute("Files"));
                 }
                 return workingCopySerializer;
             }

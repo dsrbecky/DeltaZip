@@ -148,7 +148,7 @@ namespace DeltaZip
                 // Store
                 List<int> hashIndices = new List<int>();
                 long offset = 0;
-                foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider)) {
+                foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider, false)) {
                     if (stats.Canceled) return;
 
                     Hash hash = Hash.Compute(block);

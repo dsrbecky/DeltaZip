@@ -113,7 +113,7 @@ namespace DeltaZip
             return blocks;
         }
 
-        public static IEnumerable<Block> Split(Stream stream, SHA1 sha1Provider)
+        public static IEnumerable<Block> Split(Stream stream, SHA1 sha1Provider, bool threadsafe)
         {
             byte[] buffer = new byte[Math.Min(Settings.SplitterReadBufferSize, stream.Length)];
             int    bufferUsed = 0;
@@ -138,6 +138,9 @@ namespace DeltaZip
                     blocks.RemoveAt(blocks.Count - 1);
                     foreach (Block hashBlock in blocks) {
                         yield return hashBlock;
+                    }
+                    if (threadsafe) {
+                        buffer = new byte[Math.Min(Settings.SplitterReadBufferSize, stream.Length)];
                     }
 					// Works fine with overlapping
                     Array.Copy(last.Buffer, last.Offset, buffer, 0, last.Length);
