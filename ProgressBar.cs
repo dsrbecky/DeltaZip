@@ -11,59 +11,65 @@ namespace DeltaZip
 {
     public partial class ProgressBar : Form
     {
-        public volatile bool Canceled;
-
-        public string Archive;
-        public string Filename;
-        public float Progress;
-        public string Status;
-
-        public long Compressed;
-        public long SavedByCompression;
-        public long SavedByInternalDelta;
-        public long SavedByExternalDelta;
-
         public ProgressBar()
         {
             InitializeComponent();
         }
 
-        public void SetStatus(string status)
+        public ProgressBar(ArchiveWriter.Stats stats):this()
         {
-            Status = status;
-            Refresh();
+            timer1.Tick += delegate {
+                this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
+                progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
+                textStatus.Text = stats.Status;
+
+                long total = stats.Compressed + stats.SavedByCompression + stats.SavedByInternalDelta + stats.SavedByExternalDelta;
+                TimeSpan time = (stats.EndTime ?? DateTime.Now) - stats.StartTime;
+                labelL1.Text = "Total processed:";          textL1.Text  = FormatSize(total);
+                labelL2.Text = "Elapsed time:";             textL2.Text  = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
+                labelL3.Text = "Block size:";               textL3.Text  = FormatSize(Settings.SplitterBlockSize);
+                labelR1.Text = "Compressed size:";          textR1.Text  = FormatSize(stats.Compressed, total);
+                labelR2.Text = "Saved by compression:";     textR2.Text  = FormatSize(stats.SavedByCompression, total);
+                labelR3.Text = "Saved by internal delta:";  textR3.Text  = FormatSize(stats.SavedByInternalDelta, total);
+                labelR4.Text = "Saved by external delta:";  textR4.Text  = FormatSize(stats.SavedByExternalDelta, total);
+
+                buttonCancel.Enabled = (stats.EndTime == null);
+            };
+            buttonCancel.Click += delegate {
+                stats.Canceled = true;
+                stats.EndTime  = DateTime.Now;
+            };
         }
 
-        public void SetProgress(float progress)
+        public ProgressBar(ArchiveReader.Stats stats):this()
         {
-            this.Progress = progress;
-            Refresh();
+            timer1.Tick += delegate {
+                this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
+                progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
+                textStatus.Text = stats.Status;
+
+                long total = stats.Unmodified + stats.ReadFromArchive + stats.ReadFromWorkingCopy;
+                TimeSpan time = (stats.EndTime ?? DateTime.Now) - stats.StartTime;
+                labelL1.Text = "Total processed:";          textL1.Text  = FormatSize(total);
+                labelL2.Text = "Elapsed time:";             textL2.Text  = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
+                labelR1.Text = "Unmodified:";               textR1.Text = FormatSize(stats.Unmodified, total);
+                labelR2.Text = "Read from archive:";        textR2.Text = FormatSize(stats.ReadFromArchive, total);
+                labelR3.Text = "Read from working copy:";   textR3.Text = FormatSize(stats.ReadFromWorkingCopy, total);
+
+                buttonCancel.Enabled = (stats.EndTime == null);
+            };
+            buttonCancel.Click += delegate {
+                stats.Canceled = true;
+                stats.EndTime  = DateTime.Now;
+            };
         }
 
-        public new void Refresh()
-        {
-            if (!this.IsDisposed) {
-                this.BeginInvoke((MethodInvoker)delegate() {
-                    this.Text = string.Format("{0:F0}% {1} ({2})", Progress * 100, System.IO.Path.GetFileName(Filename), Archive);
-                    progressBar1.Value = Math.Max(0, Math.Min(100, (int)(Progress * 100)));
-                    txtStatus.Text = Status;
-
-                    long total = Compressed + SavedByCompression + SavedByInternalDelta + SavedByExternalDelta;
-                    txtTotalProcessed.Text = FormatSize(total);
-                    txtCompressed.Text = FormatSize(Compressed, total);
-                    txtSavedByCompression.Text = FormatSize(SavedByCompression, total);
-                    txtSavedByInternalDelta.Text = FormatSize(SavedByInternalDelta, total);
-                    txtSavedByExternalDelta.Text = FormatSize(SavedByExternalDelta, total);
-                });
-            }
-        }
-
-        string FormatSize(long size, long outOf)
+        static string FormatSize(long size, long outOf)
         {
             return FormatSize(size) + string.Format(" ({0}%)", outOf == 0 ? 0 : 100 * size / outOf);
         }
 
-        string FormatSize(long size)
+        static string FormatSize(long size)
         {
             if (size >= (long)10 * 1024 * 1024 * 1024) return (size / (1024 * 1024 * 1024))        .ToString()     + " GiB";
             if (size >= 1024 * 1024 * 1024)            return ((float)size / (1024 * 1024 * 1024)) .ToString("F1") + " GiB";
@@ -74,24 +80,9 @@ namespace DeltaZip
             return size.ToString() + " B";
         }
 
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            Canceled = true;
-            buttonCancel.Enabled = false;
-        }
-
         private void ProgressBar_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Canceled = true;
-        }
-
-        public void DisableCancelButton()
-        {
-            if (!this.IsDisposed) {
-                this.BeginInvoke((MethodInvoker)delegate() {
-                    buttonCancel.Enabled = false;
-                });
-            }
+            buttonCancel.PerformClick();
         }
     }
 }

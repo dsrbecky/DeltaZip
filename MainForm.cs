@@ -21,6 +21,19 @@ namespace DeltaZip
         public MainForm()
         {
             InitializeComponent();
+
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+        }
+
+        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(e.ExceptionObject.ToString() + Environment.NewLine + Environment.NewLine + "(press Ctrl+C to copy this message)", "Unhandled Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            MessageBox.Show(e.Exception.ToString() + Environment.NewLine + Environment.NewLine + "(press Ctrl+C to copy this message)", "Unhandled Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         [STAThread]
@@ -37,7 +50,7 @@ namespace DeltaZip
             if (dirDialog.ShowDialog() == DialogResult.OK) {
                 createSrc.Text = dirDialog.SelectedPath;
                 RefreshDstDir();
-                RefreshAutoReferencesIfNeeded();
+                RefreshAutoReferenceIfNeeded();
             }
         }
 
@@ -47,21 +60,35 @@ namespace DeltaZip
                 FolderBrowserDialog dirDialog = new FolderBrowserDialog();
                 if (dirDialog.ShowDialog() == DialogResult.OK) {
                     createDst.Text = dirDialog.SelectedPath + Path.DirectorySeparatorChar;
-                    RefreshAutoReferencesIfNeeded();
+                    RefreshAutoReferenceIfNeeded();
                 }
             } else {
                 SaveFileDialog saveDialog = new SaveFileDialog();
                 saveDialog.Filter = Filter;
                 if (saveDialog.ShowDialog() == DialogResult.OK) {
                     createDst.Text = saveDialog.FileName;
-                    RefreshAutoReferencesIfNeeded();
+                    RefreshAutoReferenceIfNeeded();
                 }
+            }
+        }
+
+        private void createRefSelect_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openDlg = new OpenFileDialog();
+            openDlg.Filter = Filter;
+            if (openDlg.ShowDialog() == DialogResult.OK) {
+                createRef.Text = openDlg.FileName;
             }
         }
 
         private void optMulti_CheckedChanged(object sender, EventArgs e)
         {
             RefreshDstDir();
+        }
+
+        private void refsAuto_CheckedChanged(object sender, EventArgs e)
+        {
+            RefreshAutoReferenceIfNeeded();
         }
 
         void RefreshDstDir()
@@ -73,61 +100,41 @@ namespace DeltaZip
             }
         }
 
-        private void refsAuto_CheckedChanged(object sender, EventArgs e)
+        void RefreshAutoReferenceIfNeeded()
         {
-            RefreshAutoReferencesIfNeeded();
-        }
-
-        void RefreshAutoReferencesIfNeeded()
-        {
-            if (refsAuto.Checked) {
-                refs.Items.Clear();
+            if (createRefAuto.Checked) {
+                createRef.Text = string.Empty;
                 string dst = createDst.Text;
                 if (string.IsNullOrEmpty(dst)) return;
 
                 string dir = Path.GetDirectoryName(dst);
+                DateTime newest = DateTime.MinValue;
                 foreach(string file in Directory.GetFiles(dir, "*" + Settings.ArchiveExtension)) {
                     if (file.ToLowerInvariant() != dst.ToLowerInvariant()) {
-                        refs.Items.Add(file);
+                        DateTime date = new FileInfo(file).LastWriteTime;
+                        if (date > newest) {
+                            createRef.Text = file;
+                            newest = date;
+                        }
                     }
                 }
             }
         }
 
-        private void refsAdd_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openDlg = new OpenFileDialog();
-            openDlg.Filter = Filter;
-            openDlg.Multiselect = true;
-            if (openDlg.ShowDialog() == DialogResult.OK) {
-                refs.Items.AddRange(openDlg.FileNames);
-            }
-            refsAuto.Checked = false;
-        }
-
-        private void refsRemove_Click(object sender, EventArgs e)
-        {
-            while(refs.SelectedIndex != -1)
-                refs.Items.RemoveAt(refs.SelectedIndex);
-            refsAuto.Checked = false;
-        }
-
         private void createBtn_Click(object sender, EventArgs e)
         {
-            string src = createSrc.Text;
-            string dst = createDst.Text;
+            string src  = createSrc.Text;
+            string dst  = createDst.Text;
+            string refr = createRef.Text;
 
             if (string.IsNullOrEmpty(src) || string.IsNullOrEmpty(dst)) return;
 
-            List<string> refs = new List<string>();
-            foreach(string s in this.refs.Items) {
-                refs.Add(s);
-            }
             if (IOFile.Exists(dst)) {
                 if (!ConfimOverride(dst)) return;
+                System.IO.File.Delete(dst);
             }
             new Thread(delegate() {
-                CreateDeltaArchive(src, dst, refs);
+                CreateDeltaArchive(src, dst, refr);
             }).Start();
         }
 
@@ -137,15 +144,15 @@ namespace DeltaZip
             return MessageBox.Show(msg, "File exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
         }
 
-        public void CreateDeltaArchive(string src, string dst, List<string> refernceFilenames)
+        public void CreateDeltaArchive(string src, string dst, string refernceFilename)
         {
-            ProgressBar bar = new ProgressBar();
-            Invoke((MethodInvoker)delegate { bar.Show(); });
-            bar.Archive = Path.GetFileName(dst);
+            ArchiveWriter.Stats stats = new ArchiveWriter.Stats();
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
 
-            List<ArchiveReader> references = new List<ArchiveReader>();
-            foreach(string refernceFilename in refernceFilenames) {
-                references.Add(new ArchiveReader(refernceFilename, bar, false));
+            Reference reference = null;
+            if (!string.IsNullOrEmpty(refernceFilename)) {
+                stats.Status = "Opening " + Path.GetFileName(refernceFilename);
+                reference = new Reference(refernceFilename);
             }
 
             List<string> verifycationList = new List<string>();
@@ -155,14 +162,12 @@ namespace DeltaZip
                 string dstBase = dst;
                 foreach(string subDir in Directory.GetDirectories(src)) {
                     dst = Path.Combine(dstBase, Path.GetFileName(subDir)) + Settings.ArchiveExtension;
-                    bar.Archive = Path.GetFileName(dst);
                     string tmpName = dst + Settings.TmpExtension;
-                    ArchiveWriter archive = new ArchiveWriter(tmpName, bar);
-                    // TODO: Find relative path
-                    archive.AddDir(subDir, references);
-                    references.Add(archive.Finish(Path.GetFileName(dst)));
+                    ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
+                    archive.AddDir(subDir, reference);
+                    reference = archive.Finish(Path.GetFileName(dst));
 
-                    if (bar.Canceled) {
+                    if (stats.Canceled) {
                         IOFile.Delete(tmpName);
                         break;
                     } else {
@@ -180,37 +185,28 @@ namespace DeltaZip
                 }
             } else {
                 string tmpName = dst + Settings.TmpExtension;
-                ArchiveWriter archive = new ArchiveWriter(tmpName, bar);
-                archive.AddDir(src, references);
+                ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
+                archive.AddDir(src, reference);
                 archive.Finish(dst);
 
-                if (bar.Canceled) {
+                if (stats.Canceled) {
                     IOFile.Delete(tmpName);
                 } else {
-                    if (IOFile.Exists(dst))
-                        IOFile.Delete(dst);
                     IOFile.Move(tmpName, dst);
 
                     verifycationList.Add(dst);
                 }
             }
+            stats.EndTime = DateTime.Now;
 
             // Free memory
-            references = null;
+            reference = null;
 
-            if (bar.Canceled) {
-                bar.SetStatus("Canceled");
-            } else {
-                if (optVerify.Checked) {
-                    foreach(string filename in verifycationList) {
-                        if (!ArchiveReader.Extract(filename, null, bar)) break;
-                    }
-                } else {
-                    bar.SetStatus("Finished");
+            if (!stats.Canceled && optVerify.Checked) {
+                foreach (string filename in verifycationList) {
+                    if (!ArchiveReader.Extract(filename, null, new ArchiveReader.Stats())) break;
                 }
             }
-
-            bar.DisableCancelButton();
         }
 
         private void extractSrcSelect_Click(object sender, EventArgs e)
@@ -242,11 +238,10 @@ namespace DeltaZip
 
         void Extract(string filename, string destination)
         {
-            ProgressBar bar = new ProgressBar();
-            bar.Archive = Path.GetFileName(filename);
-            Invoke((MethodInvoker)delegate { bar.Show(); });
+            ArchiveReader.Stats stats = new ArchiveReader.Stats();
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
 
-            ArchiveReader.Extract(filename, destination, bar);
+            ArchiveReader.Extract(filename, destination, stats);
         }
 
         private void verifySrcSelect_Click(object sender, EventArgs e)
@@ -268,11 +263,10 @@ namespace DeltaZip
 
         void Verify(string filename)
         {
-            ProgressBar bar = new ProgressBar();
-            bar.Archive = Path.GetFileName(filename);
-            Invoke((MethodInvoker)delegate { bar.Show(); });
+            ArchiveReader.Stats stats = new ArchiveReader.Stats();
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
 
-            ArchiveReader.Extract(filename, null, bar);
+            ArchiveReader.Extract(filename, null, stats);
         }
     }
 }

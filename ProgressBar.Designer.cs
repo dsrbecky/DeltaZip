@@ -27,161 +27,232 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.txtStatus = new System.Windows.Forms.Label();
+            this.textStatus = new System.Windows.Forms.Label();
             this.buttonCancel = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.txtCompressed = new System.Windows.Forms.Label();
-            this.txtSavedByCompression = new System.Windows.Forms.Label();
-            this.txtSavedByInternalDelta = new System.Windows.Forms.Label();
-            this.txtSavedByExternalDelta = new System.Windows.Forms.Label();
-            this.txtTotalProcessed = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.labelL2 = new System.Windows.Forms.Label();
+            this.labelL3 = new System.Windows.Forms.Label();
+            this.labelL4 = new System.Windows.Forms.Label();
+            this.textL2 = new System.Windows.Forms.Label();
+            this.textL3 = new System.Windows.Forms.Label();
+            this.textL4 = new System.Windows.Forms.Label();
+            this.textL1 = new System.Windows.Forms.Label();
+            this.labelL1 = new System.Windows.Forms.Label();
+            this.textR4 = new System.Windows.Forms.Label();
+            this.textR3 = new System.Windows.Forms.Label();
+            this.textR2 = new System.Windows.Forms.Label();
+            this.textR1 = new System.Windows.Forms.Label();
+            this.labelR4 = new System.Windows.Forms.Label();
+            this.labelR3 = new System.Windows.Forms.Label();
+            this.labelR2 = new System.Windows.Forms.Label();
+            this.labelR1 = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(12, 155);
+            this.progressBar1.Location = new System.Drawing.Point(12, 134);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(476, 23);
             this.progressBar1.TabIndex = 0;
             // 
-            // txtStatus
+            // textStatus
             // 
-            this.txtStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.textStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtStatus.AutoEllipsis = true;
-            this.txtStatus.Location = new System.Drawing.Point(12, 134);
-            this.txtStatus.Name = "txtStatus";
-            this.txtStatus.Size = new System.Drawing.Size(476, 18);
-            this.txtStatus.TabIndex = 1;
-            this.txtStatus.Text = "-";
+            this.textStatus.AutoEllipsis = true;
+            this.textStatus.Location = new System.Drawing.Point(12, 113);
+            this.textStatus.Name = "textStatus";
+            this.textStatus.Size = new System.Drawing.Size(476, 18);
+            this.textStatus.TabIndex = 1;
+            this.textStatus.Text = "   ";
             // 
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(413, 184);
+            this.buttonCancel.Location = new System.Drawing.Point(413, 163);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 2;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
-            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // label1
+            // labelL2
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 34);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(89, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Compressed size:";
+            this.labelL2.AutoSize = true;
+            this.labelL2.Location = new System.Drawing.Point(11, 34);
+            this.labelL2.Name = "labelL2";
+            this.labelL2.Size = new System.Drawing.Size(37, 13);
+            this.labelL2.TabIndex = 3;
+            this.labelL2.Text = "          ";
             // 
-            // label2
+            // labelL3
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 54);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(117, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Saved by compression:";
+            this.labelL3.AutoSize = true;
+            this.labelL3.Location = new System.Drawing.Point(11, 54);
+            this.labelL3.Name = "labelL3";
+            this.labelL3.Size = new System.Drawing.Size(37, 13);
+            this.labelL3.TabIndex = 4;
+            this.labelL3.Text = "          ";
             // 
-            // label3
+            // labelL4
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(11, 74);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(118, 13);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "Saved by internal delta:";
+            this.labelL4.AutoSize = true;
+            this.labelL4.Location = new System.Drawing.Point(11, 74);
+            this.labelL4.Name = "labelL4";
+            this.labelL4.Size = new System.Drawing.Size(37, 13);
+            this.labelL4.TabIndex = 5;
+            this.labelL4.Text = "          ";
             // 
-            // label4
+            // textL2
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(11, 94);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(121, 13);
-            this.label4.TabIndex = 6;
-            this.label4.Text = "Saved by external delta:";
+            this.textL2.AutoSize = true;
+            this.textL2.Location = new System.Drawing.Point(156, 34);
+            this.textL2.Name = "textL2";
+            this.textL2.Size = new System.Drawing.Size(37, 13);
+            this.textL2.TabIndex = 7;
+            this.textL2.Text = "          ";
             // 
-            // txtCompressed
+            // textL3
             // 
-            this.txtCompressed.AutoSize = true;
-            this.txtCompressed.Location = new System.Drawing.Point(156, 34);
-            this.txtCompressed.Name = "txtCompressed";
-            this.txtCompressed.Size = new System.Drawing.Size(10, 13);
-            this.txtCompressed.TabIndex = 7;
-            this.txtCompressed.Text = "-";
+            this.textL3.AutoSize = true;
+            this.textL3.Location = new System.Drawing.Point(156, 54);
+            this.textL3.Name = "textL3";
+            this.textL3.Size = new System.Drawing.Size(37, 13);
+            this.textL3.TabIndex = 8;
+            this.textL3.Text = "          ";
             // 
-            // txtSavedByCompression
+            // textL4
             // 
-            this.txtSavedByCompression.AutoSize = true;
-            this.txtSavedByCompression.Location = new System.Drawing.Point(156, 54);
-            this.txtSavedByCompression.Name = "txtSavedByCompression";
-            this.txtSavedByCompression.Size = new System.Drawing.Size(10, 13);
-            this.txtSavedByCompression.TabIndex = 8;
-            this.txtSavedByCompression.Text = "-";
+            this.textL4.AutoSize = true;
+            this.textL4.Location = new System.Drawing.Point(156, 74);
+            this.textL4.Name = "textL4";
+            this.textL4.Size = new System.Drawing.Size(37, 13);
+            this.textL4.TabIndex = 9;
+            this.textL4.Text = "          ";
             // 
-            // txtSavedByInternalDelta
+            // textL1
             // 
-            this.txtSavedByInternalDelta.AutoSize = true;
-            this.txtSavedByInternalDelta.Location = new System.Drawing.Point(156, 74);
-            this.txtSavedByInternalDelta.Name = "txtSavedByInternalDelta";
-            this.txtSavedByInternalDelta.Size = new System.Drawing.Size(10, 13);
-            this.txtSavedByInternalDelta.TabIndex = 9;
-            this.txtSavedByInternalDelta.Text = "-";
+            this.textL1.AutoSize = true;
+            this.textL1.Location = new System.Drawing.Point(156, 14);
+            this.textL1.Name = "textL1";
+            this.textL1.Size = new System.Drawing.Size(37, 13);
+            this.textL1.TabIndex = 12;
+            this.textL1.Text = "          ";
             // 
-            // txtSavedByExternalDelta
+            // labelL1
             // 
-            this.txtSavedByExternalDelta.AutoSize = true;
-            this.txtSavedByExternalDelta.Location = new System.Drawing.Point(156, 94);
-            this.txtSavedByExternalDelta.Name = "txtSavedByExternalDelta";
-            this.txtSavedByExternalDelta.Size = new System.Drawing.Size(10, 13);
-            this.txtSavedByExternalDelta.TabIndex = 10;
-            this.txtSavedByExternalDelta.Text = "-";
+            this.labelL1.AutoSize = true;
+            this.labelL1.Location = new System.Drawing.Point(11, 14);
+            this.labelL1.Name = "labelL1";
+            this.labelL1.Size = new System.Drawing.Size(37, 13);
+            this.labelL1.TabIndex = 11;
+            this.labelL1.Text = "          ";
             // 
-            // txtTotalProcessed
+            // textR4
             // 
-            this.txtTotalProcessed.AutoSize = true;
-            this.txtTotalProcessed.Location = new System.Drawing.Point(156, 14);
-            this.txtTotalProcessed.Name = "txtTotalProcessed";
-            this.txtTotalProcessed.Size = new System.Drawing.Size(10, 13);
-            this.txtTotalProcessed.TabIndex = 12;
-            this.txtTotalProcessed.Text = "-";
+            this.textR4.AutoSize = true;
+            this.textR4.Location = new System.Drawing.Point(405, 74);
+            this.textR4.Name = "textR4";
+            this.textR4.Size = new System.Drawing.Size(37, 13);
+            this.textR4.TabIndex = 20;
+            this.textR4.Text = "          ";
             // 
-            // label6
+            // textR3
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(11, 14);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(86, 13);
-            this.label6.TabIndex = 11;
-            this.label6.Text = "Total processed:";
+            this.textR3.AutoSize = true;
+            this.textR3.Location = new System.Drawing.Point(405, 54);
+            this.textR3.Name = "textR3";
+            this.textR3.Size = new System.Drawing.Size(37, 13);
+            this.textR3.TabIndex = 19;
+            this.textR3.Text = "          ";
+            // 
+            // textR2
+            // 
+            this.textR2.AutoSize = true;
+            this.textR2.Location = new System.Drawing.Point(405, 34);
+            this.textR2.Name = "textR2";
+            this.textR2.Size = new System.Drawing.Size(37, 13);
+            this.textR2.TabIndex = 18;
+            this.textR2.Text = "          ";
+            // 
+            // textR1
+            // 
+            this.textR1.AutoSize = true;
+            this.textR1.Location = new System.Drawing.Point(405, 14);
+            this.textR1.Name = "textR1";
+            this.textR1.Size = new System.Drawing.Size(37, 13);
+            this.textR1.TabIndex = 17;
+            this.textR1.Text = "          ";
+            // 
+            // labelR4
+            // 
+            this.labelR4.AutoSize = true;
+            this.labelR4.Location = new System.Drawing.Point(260, 74);
+            this.labelR4.Name = "labelR4";
+            this.labelR4.Size = new System.Drawing.Size(37, 13);
+            this.labelR4.TabIndex = 16;
+            this.labelR4.Text = "          ";
+            // 
+            // labelR3
+            // 
+            this.labelR3.AutoSize = true;
+            this.labelR3.Location = new System.Drawing.Point(260, 54);
+            this.labelR3.Name = "labelR3";
+            this.labelR3.Size = new System.Drawing.Size(37, 13);
+            this.labelR3.TabIndex = 15;
+            this.labelR3.Text = "          ";
+            // 
+            // labelR2
+            // 
+            this.labelR2.AutoSize = true;
+            this.labelR2.Location = new System.Drawing.Point(260, 34);
+            this.labelR2.Name = "labelR2";
+            this.labelR2.Size = new System.Drawing.Size(37, 13);
+            this.labelR2.TabIndex = 14;
+            this.labelR2.Text = "          ";
+            // 
+            // labelR1
+            // 
+            this.labelR1.AutoSize = true;
+            this.labelR1.Location = new System.Drawing.Point(260, 14);
+            this.labelR1.Name = "labelR1";
+            this.labelR1.Size = new System.Drawing.Size(37, 13);
+            this.labelR1.TabIndex = 13;
+            this.labelR1.Text = "          ";
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
             // 
             // ProgressBar
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(500, 219);
-            this.Controls.Add(this.txtTotalProcessed);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.txtSavedByExternalDelta);
-            this.Controls.Add(this.txtSavedByInternalDelta);
-            this.Controls.Add(this.txtSavedByCompression);
-            this.Controls.Add(this.txtCompressed);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(500, 198);
+            this.Controls.Add(this.textR4);
+            this.Controls.Add(this.textR3);
+            this.Controls.Add(this.textR2);
+            this.Controls.Add(this.textR1);
+            this.Controls.Add(this.labelR4);
+            this.Controls.Add(this.labelR3);
+            this.Controls.Add(this.labelR2);
+            this.Controls.Add(this.labelR1);
+            this.Controls.Add(this.textL1);
+            this.Controls.Add(this.labelL1);
+            this.Controls.Add(this.textL4);
+            this.Controls.Add(this.textL3);
+            this.Controls.Add(this.textL2);
+            this.Controls.Add(this.labelL4);
+            this.Controls.Add(this.labelL3);
+            this.Controls.Add(this.labelL2);
             this.Controls.Add(this.buttonCancel);
-            this.Controls.Add(this.txtStatus);
+            this.Controls.Add(this.textStatus);
             this.Controls.Add(this.progressBar1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -196,17 +267,24 @@
         #endregion
 
         private System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.Label txtStatus;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label txtCompressed;
-        private System.Windows.Forms.Label txtSavedByCompression;
-        private System.Windows.Forms.Label txtSavedByInternalDelta;
-        private System.Windows.Forms.Label txtSavedByExternalDelta;
+        private System.Windows.Forms.Label textStatus;
+        private System.Windows.Forms.Label labelL2;
+        private System.Windows.Forms.Label labelL3;
+        private System.Windows.Forms.Label labelL4;
+        private System.Windows.Forms.Label textL2;
+        private System.Windows.Forms.Label textL3;
+        private System.Windows.Forms.Label textL4;
         private System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.Label txtTotalProcessed;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label textL1;
+        private System.Windows.Forms.Label labelL1;
+        private System.Windows.Forms.Label textR4;
+        private System.Windows.Forms.Label textR3;
+        private System.Windows.Forms.Label textR2;
+        private System.Windows.Forms.Label textR1;
+        private System.Windows.Forms.Label labelR4;
+        private System.Windows.Forms.Label labelR3;
+        private System.Windows.Forms.Label labelR2;
+        private System.Windows.Forms.Label labelR1;
+        private System.Windows.Forms.Timer timer1;
     }
 }

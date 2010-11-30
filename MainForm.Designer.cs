@@ -41,10 +41,7 @@
             this.createDstSelect = new System.Windows.Forms.Button();
             this.createSrc = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.refsRemove = new System.Windows.Forms.Button();
-            this.refs = new System.Windows.Forms.ListBox();
-            this.refsAdd = new System.Windows.Forms.Button();
-            this.refsAuto = new System.Windows.Forms.CheckBox();
+            this.createRefAuto = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.extractDst = new System.Windows.Forms.ComboBox();
             this.extractBtn = new System.Windows.Forms.Button();
@@ -58,6 +55,8 @@
             this.verifySrc = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.verifySrcSelect = new System.Windows.Forms.Button();
+            this.createRef = new System.Windows.Forms.ComboBox();
+            this.createRefSelect = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -75,11 +74,13 @@
             this.tabControl1.Location = new System.Drawing.Point(8, 8);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(602, 318);
+            this.tabControl1.Size = new System.Drawing.Size(542, 238);
             this.tabControl1.TabIndex = 3;
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.createRef);
+            this.tabPage1.Controls.Add(this.createRefSelect);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.optMulti);
             this.tabPage1.Controls.Add(this.createBtn);
@@ -91,14 +92,11 @@
             this.tabPage1.Controls.Add(this.createDstSelect);
             this.tabPage1.Controls.Add(this.createSrc);
             this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.refsRemove);
-            this.tabPage1.Controls.Add(this.refs);
-            this.tabPage1.Controls.Add(this.refsAdd);
-            this.tabPage1.Controls.Add(this.refsAuto);
+            this.tabPage1.Controls.Add(this.createRefAuto);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(594, 292);
+            this.tabPage1.Size = new System.Drawing.Size(534, 212);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Create archive";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -114,9 +112,8 @@
             // 
             // optMulti
             // 
-            this.optMulti.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.optMulti.AutoSize = true;
-            this.optMulti.Location = new System.Drawing.Point(75, 213);
+            this.optMulti.Location = new System.Drawing.Point(75, 134);
             this.optMulti.Name = "optMulti";
             this.optMulti.Size = new System.Drawing.Size(267, 17);
             this.optMulti.TabIndex = 16;
@@ -127,7 +124,7 @@
             // createBtn
             // 
             this.createBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createBtn.Location = new System.Drawing.Point(501, 5);
+            this.createBtn.Location = new System.Drawing.Point(441, 5);
             this.createBtn.Name = "createBtn";
             this.createBtn.Size = new System.Drawing.Size(75, 23);
             this.createBtn.TabIndex = 0;
@@ -137,11 +134,10 @@
             // 
             // optVerify
             // 
-            this.optVerify.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.optVerify.AutoSize = true;
             this.optVerify.Checked = true;
             this.optVerify.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.optVerify.Location = new System.Drawing.Point(75, 190);
+            this.optVerify.Location = new System.Drawing.Point(75, 111);
             this.optVerify.Name = "optVerify";
             this.optVerify.Size = new System.Drawing.Size(90, 17);
             this.optVerify.TabIndex = 15;
@@ -151,7 +147,7 @@
             // createSrcSelect
             // 
             this.createSrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createSrcSelect.Location = new System.Drawing.Point(471, 5);
+            this.createSrcSelect.Location = new System.Drawing.Point(411, 5);
             this.createSrcSelect.Name = "createSrcSelect";
             this.createSrcSelect.Size = new System.Drawing.Size(24, 23);
             this.createSrcSelect.TabIndex = 3;
@@ -161,9 +157,8 @@
             // 
             // label6
             // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 191);
+            this.label6.Location = new System.Drawing.Point(10, 88);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(46, 13);
             this.label6.TabIndex = 14;
@@ -185,13 +180,13 @@
             this.createDst.FormattingEnabled = true;
             this.createDst.Location = new System.Drawing.Point(75, 32);
             this.createDst.Name = "createDst";
-            this.createDst.Size = new System.Drawing.Size(396, 21);
+            this.createDst.Size = new System.Drawing.Size(336, 21);
             this.createDst.TabIndex = 13;
             // 
             // createDstSelect
             // 
             this.createDstSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.createDstSelect.Location = new System.Drawing.Point(471, 31);
+            this.createDstSelect.Location = new System.Drawing.Point(411, 31);
             this.createDstSelect.Name = "createDstSelect";
             this.createDstSelect.Size = new System.Drawing.Size(24, 23);
             this.createDstSelect.TabIndex = 6;
@@ -206,7 +201,7 @@
             this.createSrc.FormattingEnabled = true;
             this.createSrc.Location = new System.Drawing.Point(75, 6);
             this.createSrc.Name = "createSrc";
-            this.createSrc.Size = new System.Drawing.Size(396, 21);
+            this.createSrc.Size = new System.Drawing.Size(336, 21);
             this.createSrc.TabIndex = 12;
             // 
             // label3
@@ -214,57 +209,22 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(10, 62);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(59, 13);
+            this.label3.Size = new System.Drawing.Size(54, 13);
             this.label3.TabIndex = 7;
-            this.label3.Text = "Refernces:";
-            // 
-            // refsRemove
-            // 
-            this.refsRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.refsRemove.Location = new System.Drawing.Point(420, 163);
-            this.refsRemove.Name = "refsRemove";
-            this.refsRemove.Size = new System.Drawing.Size(75, 23);
-            this.refsRemove.TabIndex = 11;
-            this.refsRemove.Text = "Remove";
-            this.refsRemove.UseVisualStyleBackColor = true;
-            this.refsRemove.Click += new System.EventHandler(this.refsRemove_Click);
-            // 
-            // refs
-            // 
-            this.refs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.refs.FormattingEnabled = true;
-            this.refs.Location = new System.Drawing.Point(75, 59);
-            this.refs.Name = "refs";
-            this.refs.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.refs.Size = new System.Drawing.Size(420, 95);
-            this.refs.TabIndex = 8;
-            // 
-            // refsAdd
-            // 
-            this.refsAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.refsAdd.Location = new System.Drawing.Point(339, 163);
-            this.refsAdd.Name = "refsAdd";
-            this.refsAdd.Size = new System.Drawing.Size(75, 23);
-            this.refsAdd.TabIndex = 10;
-            this.refsAdd.Text = "Add...";
-            this.refsAdd.UseVisualStyleBackColor = true;
-            this.refsAdd.Click += new System.EventHandler(this.refsAdd_Click);
+            this.label3.Text = "Refernce:";
             // 
             // refsAuto
             // 
-            this.refsAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.refsAuto.AutoSize = true;
-            this.refsAuto.Checked = true;
-            this.refsAuto.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.refsAuto.Location = new System.Drawing.Point(83, 167);
-            this.refsAuto.Name = "refsAuto";
-            this.refsAuto.Size = new System.Drawing.Size(137, 17);
-            this.refsAuto.TabIndex = 9;
-            this.refsAuto.Text = "Auto-add local archives";
-            this.refsAuto.UseVisualStyleBackColor = true;
-            this.refsAuto.CheckedChanged += new System.EventHandler(this.refsAuto_CheckedChanged);
+            this.createRefAuto.AutoSize = true;
+            this.createRefAuto.Checked = true;
+            this.createRefAuto.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.createRefAuto.Location = new System.Drawing.Point(75, 88);
+            this.createRefAuto.Name = "refsAuto";
+            this.createRefAuto.Size = new System.Drawing.Size(267, 17);
+            this.createRefAuto.TabIndex = 9;
+            this.createRefAuto.Text = "Automatically add most recent archive as reference";
+            this.createRefAuto.UseVisualStyleBackColor = true;
+            this.createRefAuto.CheckedChanged += new System.EventHandler(this.refsAuto_CheckedChanged);
             // 
             // tabPage2
             // 
@@ -278,7 +238,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(594, 292);
+            this.tabPage2.Size = new System.Drawing.Size(534, 212);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Extract archive";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -290,13 +250,13 @@
             this.extractDst.FormattingEnabled = true;
             this.extractDst.Location = new System.Drawing.Point(75, 32);
             this.extractDst.Name = "extractDst";
-            this.extractDst.Size = new System.Drawing.Size(396, 21);
+            this.extractDst.Size = new System.Drawing.Size(336, 21);
             this.extractDst.TabIndex = 14;
             // 
             // extractBtn
             // 
             this.extractBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractBtn.Location = new System.Drawing.Point(501, 5);
+            this.extractBtn.Location = new System.Drawing.Point(441, 5);
             this.extractBtn.Name = "extractBtn";
             this.extractBtn.Size = new System.Drawing.Size(75, 23);
             this.extractBtn.TabIndex = 0;
@@ -311,7 +271,7 @@
             this.extractSrc.FormattingEnabled = true;
             this.extractSrc.Location = new System.Drawing.Point(75, 6);
             this.extractSrc.Name = "extractSrc";
-            this.extractSrc.Size = new System.Drawing.Size(396, 21);
+            this.extractSrc.Size = new System.Drawing.Size(336, 21);
             this.extractSrc.TabIndex = 13;
             // 
             // label4
@@ -326,7 +286,7 @@
             // extractDstSelect
             // 
             this.extractDstSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractDstSelect.Location = new System.Drawing.Point(471, 31);
+            this.extractDstSelect.Location = new System.Drawing.Point(411, 31);
             this.extractDstSelect.Name = "extractDstSelect";
             this.extractDstSelect.Size = new System.Drawing.Size(24, 23);
             this.extractDstSelect.TabIndex = 12;
@@ -337,7 +297,7 @@
             // extractSrcSelect
             // 
             this.extractSrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractSrcSelect.Location = new System.Drawing.Point(471, 5);
+            this.extractSrcSelect.Location = new System.Drawing.Point(411, 5);
             this.extractSrcSelect.Name = "extractSrcSelect";
             this.extractSrcSelect.Size = new System.Drawing.Size(24, 23);
             this.extractSrcSelect.TabIndex = 9;
@@ -362,7 +322,7 @@
             this.tabPage3.Controls.Add(this.verifySrcSelect);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(594, 292);
+            this.tabPage3.Size = new System.Drawing.Size(534, 212);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Verify archive";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -370,7 +330,7 @@
             // verifyBtn
             // 
             this.verifyBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.verifyBtn.Location = new System.Drawing.Point(510, 5);
+            this.verifyBtn.Location = new System.Drawing.Point(441, 5);
             this.verifyBtn.Name = "verifyBtn";
             this.verifyBtn.Size = new System.Drawing.Size(75, 23);
             this.verifyBtn.TabIndex = 14;
@@ -385,7 +345,7 @@
             this.verifySrc.FormattingEnabled = true;
             this.verifySrc.Location = new System.Drawing.Point(75, 6);
             this.verifySrc.Name = "verifySrc";
-            this.verifySrc.Size = new System.Drawing.Size(405, 21);
+            this.verifySrc.Size = new System.Drawing.Size(336, 21);
             this.verifySrc.TabIndex = 17;
             // 
             // label7
@@ -400,7 +360,7 @@
             // verifySrcSelect
             // 
             this.verifySrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.verifySrcSelect.Location = new System.Drawing.Point(480, 5);
+            this.verifySrcSelect.Location = new System.Drawing.Point(411, 5);
             this.verifySrcSelect.Name = "verifySrcSelect";
             this.verifySrcSelect.Size = new System.Drawing.Size(24, 23);
             this.verifySrcSelect.TabIndex = 16;
@@ -408,11 +368,32 @@
             this.verifySrcSelect.UseVisualStyleBackColor = true;
             this.verifySrcSelect.Click += new System.EventHandler(this.verifySrcSelect_Click);
             // 
+            // createRef
+            // 
+            this.createRef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.createRef.FormattingEnabled = true;
+            this.createRef.Location = new System.Drawing.Point(75, 58);
+            this.createRef.Name = "createRef";
+            this.createRef.Size = new System.Drawing.Size(336, 21);
+            this.createRef.TabIndex = 18;
+            // 
+            // createRefSelect
+            // 
+            this.createRefSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.createRefSelect.Location = new System.Drawing.Point(411, 57);
+            this.createRefSelect.Name = "createRefSelect";
+            this.createRefSelect.Size = new System.Drawing.Size(24, 23);
+            this.createRefSelect.TabIndex = 17;
+            this.createRefSelect.Text = "...";
+            this.createRefSelect.UseVisualStyleBackColor = true;
+            this.createRefSelect.Click += new System.EventHandler(this.createRefSelect_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(617, 334);
+            this.ClientSize = new System.Drawing.Size(557, 254);
             this.Controls.Add(this.tabControl1);
             this.Name = "MainForm";
             this.Text = "Delta Zip";
@@ -442,10 +423,7 @@
         private System.Windows.Forms.Button createDstSelect;
         private System.Windows.Forms.ComboBox createSrc;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button refsRemove;
-        private System.Windows.Forms.ListBox refs;
-        private System.Windows.Forms.Button refsAdd;
-        private System.Windows.Forms.CheckBox refsAuto;
+        private System.Windows.Forms.CheckBox createRefAuto;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.ComboBox extractDst;
         private System.Windows.Forms.Button extractBtn;
@@ -459,6 +437,8 @@
         private System.Windows.Forms.ComboBox verifySrc;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button verifySrcSelect;
+        private System.Windows.Forms.ComboBox createRef;
+        private System.Windows.Forms.Button createRefSelect;
 
 
     }

@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading;
 using System.Xml.Serialization;
+using Ionic.Zip;
 
 namespace DeltaZip
 {
@@ -124,6 +125,15 @@ namespace DeltaZip
             Array.Copy(src.GetBuffer(), src.Position, dst.GetBuffer(), 0, size);
             src.Position += size;
             return dst;
+        }
+
+        public static MemoryStream ExtractMetaData(ZipFile zipFile, string metadata)
+        {
+            ZipEntry zipEntry = zipFile[Settings.MetaDataDir + "/" + metadata];
+            MemoryStream stream = new MemoryStream((int)zipEntry.UncompressedSize);
+            zipEntry.Extract(stream);
+            stream.Position = 0;
+            return stream;
         }
     }
 

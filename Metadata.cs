@@ -10,46 +10,88 @@ using System.Windows.Forms;
 using Ionic.Zip;
 using Ionic.Zlib;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace DeltaZip
 {
+    public class Version
+    {
+        [XmlAttribute] public int Major;
+        [XmlAttribute] public int Minor;
+
+        public override string ToString()
+        {
+            return Major.ToString() + "." + Minor.ToString();
+        }
+    }
+
+    public class Info
+    {
+        public Version  Version;
+        public Version  ReaderVersion;
+        public string   CreatedBy;
+        public DateTime CreatedOn;
+        public string   Comment;
+    }
+
     public class File
     {
         [XmlAttribute] public string Name;
         [XmlAttribute] public long Size;
-        [XmlAttribute(DataType = "hexBinary")] public byte[] SHA1;
+        [XmlAttribute(DataType = "hexBinary")] public byte[] Hash;
         [XmlAttribute] public DateTime Created;
         [XmlAttribute] public DateTime Modified;
         [XmlAttribute] public FileAttributes Attributes;
-        [XmlAttribute] public string SourceArchive;
-
-        [XmlElement(ElementName="Source")]
-        public List<Source> Sources = new List<Source>();
-
-        public void CheckSourceSizes()
-        {
-            if (this.Sources.Count > 0) {
-                long size = 0;
-                foreach(Source src in this.Sources) {
-                    size += src.Length;
+        [XmlIgnore]    public List<int> HashIndices = new List<int>();
+        [XmlText]      public string HashIndicesAsText {
+            get {
+                const int wrap = 200;
+                int lastWrap = 0;
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < this.HashIndices.Count; i++) {
+                    sb.Append(this.HashIndices[i].ToString());
+                    bool consecutive = false;
+                    while (i + 1 < this.HashIndices.Count && this.HashIndices[i+1] == this.HashIndices[i] + 1) {
+                        consecutive = true;
+                        i++;
+                    }
+                    if (consecutive) {
+                        sb.Append('-');
+                        sb.Append(this.HashIndices[i].ToString());
+                    }
+                    if (i != this.HashIndices.Count - 1) {
+                        if (sb.Length - lastWrap >= wrap) {
+                            sb.Append(Environment.NewLine);
+                            lastWrap = sb.Length;
+                        } else {
+                            sb.Append(' ');
+                        }
+                    }
                 }
-                if (size != Size) {
-                    throw new Exception("Total size of sources does not match file size");
+                if (sb.Length > 50) {
+                    return Environment.NewLine + sb.ToString();
+                } else {
+                    return sb.ToString();
                 }
             }
-        }
-    }
-
-    public class Source
-    {
-        [XmlAttribute] public string Archive;
-        [XmlAttribute] public string Path;
-        [XmlAttribute] public int Offset;
-        [XmlAttribute] public int Length;
-
-        public override string ToString()
-        {
-            return string.Format("{0}/{1} ({2}+{3})", Archive, Path, Offset, Length);
+            set {
+                string[] indices = Regex.Split(value, @"\s+");
+                this.HashIndices = new List<int>(indices.Length);
+                foreach(string index in indices) {
+                    if (!string.IsNullOrEmpty(index)) {
+                        if (index.Contains("-")) {
+                            string[] range = index.Split('-');
+                            int start = int.Parse(range[0]);
+                            int end   = int.Parse(range[1]);
+                            for(int i = start; i <= end; i++) {
+                                this.HashIndices.Add(i);
+                            }
+                        } else {
+                            this.HashIndices.Add(int.Parse(index));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -112,14 +154,14 @@ namespace DeltaZip
     }
 
     [StructLayout(LayoutKind.Sequential, Pack=4)]
-    public struct PartialHash: IComparable<PartialHash>
+    public struct HashSource: IComparable<HashSource>
     {
         public Hash Hash;
-        public int  ZipEntryName;
-        public int  Offset;
+        public int  Path;
+        public long Offset;
         public int  Length;
 
-        public int CompareTo(PartialHash other)
+        public int CompareTo(HashSource other)
         {
             return this.Hash.CompareTo(other.Hash);
         }
@@ -133,7 +175,7 @@ namespace DeltaZip
         [XmlAttribute] public long Size;
         [XmlAttribute] public DateTime Created;
         [XmlAttribute] public DateTime Modified;
-        [XmlAttribute(DataType = "hexBinary")] public byte[] SHA1;
+        [XmlAttribute("SHA1", DataType = "hexBinary")] public byte[] Hash;
 
         [XmlElement(ElementName = "Hash")]
         public List<WorkingHash> Hashes = new List<WorkingHash>();
@@ -152,16 +194,21 @@ namespace DeltaZip
         }
     }
 
-    public class WorkingHash
+    public class WorkingHash : IComparable<WorkingHash>
     {
         [XmlIgnore]    public Hash Hash;
         [XmlAttribute] public long Offset;
-        [XmlAttribute] public int Length;
+        [XmlAttribute] public int  Length;
         [XmlAttribute(DataType = "hexBinary")]
         public byte[] SHA1
         {
             get { return this.Hash.ToByteArray(); }
             set { this.Hash = new Hash(value); }
+        }
+
+        public int CompareTo(WorkingHash other)
+        {
+            return this.Hash.CompareTo(other.Hash);
         }
     }
 

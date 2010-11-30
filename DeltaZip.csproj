@@ -54,8 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Metadata.cs" />
     <Compile Include="ArchiveReader.cs" />
+    <Compile Include="Metadata.cs" />
     <Compile Include="ArchiveWriter.cs" />
     <Compile Include="Conf.cs" />
     <Compile Include="Splitter.cs" />
