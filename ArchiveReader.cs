@@ -147,6 +147,9 @@ namespace DeltaZip
             Dictionary<string, ZipFile> openZips = new Dictionary<string, ZipFile>();
             openZips[archive.ArchiveName.ToLowerInvariant()] = archive.zipFile;
 
+            FileStream openFile = null;
+            string     openFilePathLC = null;
+
             // Setup cache
             Dictionary<string, ExtractedData> dataCache = new Dictionary<string, ExtractedData>();
             int time = 0;
@@ -206,6 +209,9 @@ namespace DeltaZip
 
                     Directory.CreateDirectory(Path.GetDirectoryName(tmpFileName));
                     outFile = new FileStream(tmpFileName, FileMode.CreateNew, FileAccess.Write);
+                    // Avoid fragmentation
+                    outFile.SetLength(file.Size);
+                    outFile.Position = 0;
                 }
 
                 List<WorkingHash> workingHashes = new List<WorkingHash>();
@@ -244,25 +250,41 @@ namespace DeltaZip
                             string path = archive.GetString(hashSrc.Path).ToLowerInvariant();
                             ExtractedData data = dataCache[path];
 
-                            // See if we have the hash on disk
-                            WorkingHash onDisk = null;
+                            // See if we have the hash on disk.  Try out best not to seek too much
+                            WorkingHash onDiskHash = null;
                             WorkingFile onDiskFile = null;
+                            long bestSeekDistance = long.MaxValue;
                             foreach (WorkingFile wf in oldWorkingCopy.Files) {
                                 int idx = wf.Hashes.BinarySearch(new WorkingHash() { Hash = hashSrc.Hash });
                                 if (idx >= 0) {
-                                    onDisk = wf.Hashes[idx];
-                                    onDiskFile = wf;
-                                    break;
+                                    while(idx - 1 >= 0 && wf.Hashes[idx - 1].Hash.Equals(hashSrc.Hash)) idx--;
+                                    for (; idx < wf.Hashes.Count && wf.Hashes[idx].Hash.Equals(hashSrc.Hash); idx++) {
+                                        long seekDistance;
+                                        if (openFile != null && openFilePathLC == wf.NameLowercase) {
+                                            seekDistance = Math.Abs(openFile.Position - wf.Hashes[idx].Offset);
+                                        } else {
+                                            seekDistance = long.MaxValue;
+                                        }
+                                        if (onDiskHash == null || seekDistance < bestSeekDistance) {
+                                            onDiskHash = wf.Hashes[idx];
+                                            onDiskFile = wf;
+                                            bestSeekDistance = seekDistance;
+                                        }
+                                    }
                                 }
                             }
 
-                            if (onDisk != null && onDiskFile.ExistsOnDisk() && !onDiskFile.IsModifiedOnDisk()) {
-                                MemoryStream memStream = new MemoryStream(onDisk.Length);
-                                memStream.SetLength(onDisk.Length);
-                                using(FileStream fs = new FileStream(onDiskFile.NameMixedcase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize)) {
-                                    fs.Position = onDisk.Offset;
-                                    fs.Read(memStream.GetBuffer(), 0, (int)memStream.Length);
+                            if (onDiskHash != null && ((openFilePathLC == onDiskFile.NameLowercase) || (onDiskFile.ExistsOnDisk() && !onDiskFile.IsModifiedOnDisk()))) {
+                                MemoryStream memStream = new MemoryStream(onDiskHash.Length);
+                                memStream.SetLength(onDiskHash.Length);
+                                // Open other file
+                                if (openFilePathLC != onDiskFile.NameLowercase) {
+                                    if (openFile != null) openFile.Dispose();
+                                    openFile = new FileStream(onDiskFile.NameLowercase, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize);
+                                    openFilePathLC = onDiskFile.NameLowercase;
                                 }
+                                openFile.Position = onDiskHash.Offset;
+                                openFile.Read(memStream.GetBuffer(), 0, (int)memStream.Length);
                                 writeQueue.Enqueue(new MemoryStreamRef() {
                                     Ready     = new ManualResetEvent(true),
                                     MemStream = memStream,
@@ -391,6 +413,12 @@ namespace DeltaZip
 
             stats.Progress = 0;
 
+            // Close sources
+            foreach (ZipFile zip in openZips.Values) {
+                zip.Dispose();
+            }
+            if (openFile != null) openFile.Dispose();
+
             // Replace the old working copy with new one
             if (writeEnabled) {
                 List<string> deleteFilesLC = new List<string>();
@@ -463,12 +491,12 @@ namespace DeltaZip
 
                 // Move the new files
                 foreach (WorkingFile workingFile in newWorkingCopy.Files) {
-                    stats.Status = "Moving " + Path.GetFileName(workingFile.NameLowercase);
+                    stats.Status = "Moving " + Path.GetFileName(workingFile.NameMixedcase);
                     if (!keepFilesLC.Contains(workingFile.NameLowercase) && workingFile.TempFileName != null) {
                         while (true) {
                             try {
-                                Directory.CreateDirectory(Path.GetDirectoryName(workingFile.NameLowercase));
-                                System.IO.File.Move(workingFile.TempFileName, workingFile.NameLowercase);
+                                Directory.CreateDirectory(Path.GetDirectoryName(workingFile.NameMixedcase));
+                                System.IO.File.Move(workingFile.TempFileName, workingFile.NameMixedcase);
                                 break;
                             } catch (Exception e) {
                                 DialogResult moveAnswer = MessageBox.Show("Error when moving " + workingFile.TempFileName + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
@@ -492,10 +520,6 @@ namespace DeltaZip
 
             stats.Status = "Saving working copy state";
             newWorkingCopy.Save();
-
-            foreach (ZipFile zip in openZips.Values) {
-                zip.Dispose();
-            }
 
             stats.EndTime = DateTime.Now;
             if (writeEnabled) {

@@ -150,6 +150,11 @@ namespace DeltaZip
             if (this.Part4 != other.Part4) return this.Part4.CompareTo(other.Part4);
             return 0;
         }
+
+        public bool Equals(Hash obj)
+        {
+            return CompareTo(obj) == 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack=4)]
