@@ -180,6 +180,7 @@ namespace DeltaZip
         [XmlAttribute] public DateTime Created;
         [XmlAttribute] public DateTime Modified;
         [XmlAttribute("SHA1", DataType = "hexBinary")] public byte[] Hash;
+        [XmlAttribute] public bool UserModified;
 
         [XmlElement(ElementName = "Hash")]
         public List<WorkingHash> Hashes = new List<WorkingHash>();
@@ -217,73 +218,63 @@ namespace DeltaZip
         }
     }
 
+    /// <summary>
+    /// This tries to mirror the state of the disk with the additional feature
+    /// of knowing the hashes and the 'user modified' flag
+    /// </summary>
     public class WorkingCopy
     {
         [XmlElement(ElementName = "File")]
         public List<WorkingFile> Files = new List<WorkingFile>();
 
-        static string StoragePath
+        public static WorkingCopy Load(string path)
         {
-            get
-            {
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                return Path.Combine(Path.Combine(appData, "DeltaZip"), "WorkingCopy.xml");
-            }
-        }
-
-        public void Save()
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(StoragePath));
-            using (FileStream writter = new FileStream(StoragePath, FileMode.Create)) {
-                Util.WorkingCopySerializer.Serialize(writter, this);
-            }
-        }
-
-        public static WorkingCopy Load()
-        {
-            if (System.IO.File.Exists(StoragePath)) {
+            if (System.IO.File.Exists(path)) {
                 try {
-                    using (FileStream reader = new FileStream(StoragePath, FileMode.Open)) {
-                        return (WorkingCopy)Util.WorkingCopySerializer.Deserialize(reader);
+                    using (FileStream reader = new FileStream(path, FileMode.Open)) {
+                        Stream deflate = new System.IO.Compression.DeflateStream(reader, System.IO.Compression.CompressionMode.Decompress, true);
+                        return (WorkingCopy)Util.WorkingCopySerializer.Deserialize(deflate);
                     }
-                }
-                catch {
+                } catch {
                     return new WorkingCopy();
                 }
-            }
-            else {
+            } else {
                 return new WorkingCopy();
             }
         }
 
-        /*
-        public static WorkingCopy HashLocalFiles(string path, WorkingCopy lastWorkingCopy)
+        public void Save(string path)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            using (FileStream writter = new FileStream(path, FileMode.Create)) {
+                Stream deflate = new System.IO.Compression.DeflateStream(writter, System.IO.Compression.CompressionMode.Compress, true);
+                Util.WorkingCopySerializer.Serialize(deflate, this);
+            }
+        }
+
+        public static WorkingCopy HashLocalFiles(string path, ArchiveReader.Stats stats, WorkingCopy lastWorkingCopy)
         {
             WorkingCopy wc = new WorkingCopy();
 
             string[] files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-            foreach (string filename in files)
-            {
+            foreach (string filename in files) {
                 FileInfo fileInfo = new FileInfo(filename);
 
-                WorkingFile lastFile = lastWorkingCopy.Files.Find(file => file.Name == filename);
+                WorkingFile lastFile = lastWorkingCopy.Files.Find(file => file.NameLowercase == filename.ToLowerInvariant());
 
-                if (lastFile           != null &&
-                    lastFile.Size      == fileInfo.Length &&
-                    lastFile.Created   == fileInfo.CreationTime &&
-                    lastFile.Modified  == fileInfo.LastWriteTime) {
-                    // Do not rehash - assume it was unchanged
+                if (lastFile != null && !lastFile.IsModifiedOnDisk()) {
                     wc.Files.Add(lastFile);
                 } else {
+                    stats.Status = "Hashing " + Path.GetFileName(filename);
                     using (FileStream fileStreamIn = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, true)) {
                         SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
 
                         WorkingFile file = new WorkingFile() {
-                            Name = filename,
+                            NameMixedcase = filename,
                             Size = fileInfo.Length,
                             Created = fileInfo.CreationTime,
                             Modified = fileInfo.LastWriteTime,
-                            UserFile = true
+                            UserModified = true
                         };
 
                         long offset = 0;
@@ -295,14 +286,14 @@ namespace DeltaZip
                             };
                             file.Hashes.Add(hash);
                             offset += block.Length;
+                            stats.Progress = (float)offset / (float)file.Size;
                         };
-                        file.SHA1 = sha1Provider.Hash;
+                        file.Hash = sha1Provider.Hash;
                     }
                 }
             }
 
             return wc;
         }
-        */
     }
 }

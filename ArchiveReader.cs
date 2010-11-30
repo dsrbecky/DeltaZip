@@ -168,19 +168,24 @@ namespace DeltaZip
                 }
             }
 
+            string stateFile = Path.Combine(destination, Settings.StateFile);
+
             stats.Status = "Loading working copy state";
-            WorkingCopy oldWorkingCopy = writeEnabled ? WorkingCopy.Load() : new WorkingCopy();
-            WorkingCopy newWorkingCopy = new WorkingCopy();
-            List<WorkingHash> oldValidWorkingHashes = new List<WorkingHash>();
-            foreach(WorkingFile wf in oldWorkingCopy.Files) {
-                if (wf.ExistsOnDisk() && !wf.IsModifiedOnDisk()) {
-                    foreach(WorkingHash wh in wf.Hashes) {
-                        wh.File = wf;
-                    }
-                    oldValidWorkingHashes.AddRange(wf.Hashes);
+            WorkingCopy workingCopy = writeEnabled ? WorkingCopy.Load(stateFile) : new WorkingCopy();
+            List<WorkingFile> newWorkingFiles = new List<WorkingFile>();
+            List<WorkingHash> oldWorkingHashes = new List<WorkingHash>();
+            workingCopy = WorkingCopy.HashLocalFiles(destination, stats, workingCopy);
+            foreach(WorkingFile wf in workingCopy.Files) {
+                foreach(WorkingHash wh in wf.Hashes) {
+                    wh.File = wf;
                 }
+                oldWorkingHashes.AddRange(wf.Hashes);
             }
-            oldValidWorkingHashes.Sort();
+            oldWorkingHashes.Sort();
+
+            // Save the result of the hashing work
+            stats.Status = "Saving working copy state";
+            workingCopy.Save(stateFile);
 
             string tmpPath = null;
             if (writeEnabled) {
@@ -203,12 +208,11 @@ namespace DeltaZip
                 if (writeEnabled) {
 
                     // Quickpath - see if the file exists and has correct content
-                    WorkingFile oldWorkingFile = oldWorkingCopy.Files.Find(f => f.NameLowercase == Path.Combine(destination, file.Name).ToLowerInvariant());
-                    if (oldWorkingFile != null && oldWorkingFile.ExistsOnDisk() && !oldWorkingFile.IsModifiedOnDisk()) {
-                        if (new Hash(oldWorkingFile.Hash).CompareTo(new Hash(file.Hash)) == 0) {
+                    WorkingFile workingFile = workingCopy.Files.Find(f => f.NameLowercase == Path.Combine(destination, file.Name).ToLowerInvariant());
+                    if (workingFile != null && workingFile.ExistsOnDisk() && !workingFile.IsModifiedOnDisk()) {
+                        if (new Hash(workingFile.Hash).CompareTo(new Hash(file.Hash)) == 0) {
                             // The file is already there - no need to extract it
-                            oldWorkingCopy.Files.Remove(oldWorkingFile);
-                            newWorkingCopy.Files.Add(oldWorkingFile);
+                            newWorkingFiles.Add(workingFile);
                             stats.Unmodified += file.Size;
                             continue;
                         }
@@ -266,11 +270,11 @@ namespace DeltaZip
                             // See if we have the hash on disk.  Try our best not to seek too much
                             WorkingHash onDiskHash = null;
                             long bestSeekDistance = long.MaxValue;
-                            int idx = oldValidWorkingHashes.BinarySearch(new WorkingHash() { Hash = hashSrc.Hash });
+                            int idx = oldWorkingHashes.BinarySearch(new WorkingHash() { Hash = hashSrc.Hash });
                             if (idx >= 0) {
-                                while (idx - 1 >= 0 && oldValidWorkingHashes[idx - 1].Hash.Equals(hashSrc.Hash)) idx--;
-                                for (; idx < oldValidWorkingHashes.Count && oldValidWorkingHashes[idx].Hash.Equals(hashSrc.Hash); idx++) {
-                                    WorkingHash wh = oldValidWorkingHashes[idx];
+                                while (idx - 1 >= 0 && oldWorkingHashes[idx - 1].Hash.Equals(hashSrc.Hash)) idx--;
+                                for (; idx < oldWorkingHashes.Count && oldWorkingHashes[idx].Hash.Equals(hashSrc.Hash); idx++) {
+                                    WorkingHash wh = oldWorkingHashes[idx];
                                     long seekDistance;
                                     if (openFile != null && openFilePathLC == wh.File.NameLowercase) {
                                         seekDistance = Math.Abs(openFile.Position - wh.Offset);
@@ -430,7 +434,7 @@ namespace DeltaZip
                         TempFileName = tmpFileName,
                         Hashes = workingHashes
                     };
-                    newWorkingCopy.Files.Add(workingFile);
+                    newWorkingFiles.Add(workingFile);
                 }
             }
 
@@ -451,26 +455,17 @@ namespace DeltaZip
 
                 stats.Status = "Looking for local modifications";
 
-                // Delete old working copy
-                foreach (WorkingFile workingFile in oldWorkingCopy.Files) {
-                    if (workingFile.NameLowercase.StartsWith(destination.ToLowerInvariant())) {
-                        if (workingFile.ExistsOnDisk()) {
-                            if (workingFile.IsModifiedOnDisk()) {
-                                deleteFilesAskLC.Add(workingFile.NameLowercase);
-                            } else {
-                                deleteFilesLC.Add(workingFile.NameLowercase);
-                            }
-                        }
+                // Delete all non-modified files which are not part of the new set
+                foreach (WorkingFile workingFile in workingCopy.Files) {
+                    if (!workingFile.UserModified && !newWorkingFiles.Contains(workingFile)) {
+                        deleteFilesLC.Add(workingFile.NameLowercase);
                     }
                 }
 
-                // Find obstructions for new working copy
-                foreach (WorkingFile workingFile in newWorkingCopy.Files) {
-                    if (workingFile.TempFileName != null &&
-                        workingFile.ExistsOnDisk() &&
-                        !deleteFilesLC.Contains(workingFile.NameLowercase) &&
-                        !deleteFilesAskLC.Contains(workingFile.NameLowercase)) {
-                        deleteFilesAskLC.Add(workingFile.NameLowercase);
+                // Find obstructions for new files
+                foreach (WorkingFile newWorkingFile in newWorkingFiles) {
+                    if (newWorkingFile.TempFileName != null && newWorkingFile.ExistsOnDisk() && !deleteFilesLC.Contains(newWorkingFile.NameLowercase)) {
+                        deleteFilesAskLC.Add(newWorkingFile.NameLowercase);
                     }
                 }
 
@@ -495,14 +490,15 @@ namespace DeltaZip
                 }
 
                 // Delete files
-                foreach (string deleteFile in deleteFilesLC) {
-                    stats.Status = "Deleting " + Path.GetFileName(deleteFile);
+                foreach (string deleteFileLC in deleteFilesLC) {
+                    stats.Status = "Deleting " + Path.GetFileName(deleteFileLC);
                     while (true) {
                         try {
-                            System.IO.File.Delete(deleteFile);
+                            System.IO.File.Delete(deleteFileLC);
+                            workingCopy.Files.RemoveAll(f => f.NameLowercase == deleteFileLC);
                             break;
                         } catch (Exception e) {
-                            DialogResult deleteAnswer = MessageBox.Show("Can not delete file " + deleteFile + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
+                            DialogResult deleteAnswer = MessageBox.Show("Can not delete file " + deleteFileLC + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
                             if (deleteAnswer == DialogResult.Retry) continue;
                             if (deleteAnswer == DialogResult.Ignore) break;
                             if (deleteAnswer == DialogResult.Abort) {
@@ -514,16 +510,17 @@ namespace DeltaZip
                 }
 
                 // Move the new files
-                foreach (WorkingFile workingFile in newWorkingCopy.Files) {
-                    stats.Status = "Moving " + Path.GetFileName(workingFile.NameMixedcase);
-                    if (!keepFilesLC.Contains(workingFile.NameLowercase) && workingFile.TempFileName != null) {
+                foreach (WorkingFile newWorkingFile in newWorkingFiles) {
+                    if (!keepFilesLC.Contains(newWorkingFile.NameLowercase) && newWorkingFile.TempFileName != null) {
+                        stats.Status = "Moving " + Path.GetFileName(newWorkingFile.NameMixedcase);
                         while (true) {
                             try {
-                                Directory.CreateDirectory(Path.GetDirectoryName(workingFile.NameMixedcase));
-                                System.IO.File.Move(workingFile.TempFileName, workingFile.NameMixedcase);
+                                Directory.CreateDirectory(Path.GetDirectoryName(newWorkingFile.NameMixedcase));
+                                System.IO.File.Move(newWorkingFile.TempFileName, newWorkingFile.NameMixedcase);
+                                workingCopy.Files.Add(newWorkingFile);
                                 break;
                             } catch (Exception e) {
-                                DialogResult moveAnswer = MessageBox.Show("Error when moving " + workingFile.TempFileName + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
+                                DialogResult moveAnswer = MessageBox.Show("Error when moving " + newWorkingFile.TempFileName + Environment.NewLine + e.Message, "Error", MessageBoxButtons.AbortRetryIgnore);
                                 if (moveAnswer == DialogResult.Retry) continue;
                                 if (moveAnswer == DialogResult.Ignore) break;
                                 if (moveAnswer == DialogResult.Abort) {
@@ -535,14 +532,14 @@ namespace DeltaZip
                     }
                 }
 
+                stats.Status = "Saving working copy state";
+                workingCopy.Save(stateFile);
+
                 stats.Status = "Deleting temporary directory";
                 try {
                     if (Directory.Exists(tmpPath)) Directory.Delete(tmpPath, true);
                 } catch {
                 }
-
-                stats.Status = "Saving working copy state";
-                newWorkingCopy.Save();
             }
 
             stats.EndTime = DateTime.Now;
