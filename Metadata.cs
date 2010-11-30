@@ -303,6 +303,9 @@ namespace DeltaZip
                 if (filename.ToLowerInvariant() == Path.Combine(path, Settings.StateFile).ToLowerInvariant())
                     continue;
 
+                if (filename.ToLowerInvariant().StartsWith(Path.Combine(path, Settings.TmpDirectory).ToLowerInvariant()))
+                    continue;
+
                 WorkingFile lastFile = lastWorkingCopy.Find(filename);
 
                 stats.Status = "Checking " + Path.GetFileName(filename);
@@ -328,6 +331,7 @@ namespace DeltaZip
                         foreach (Block block in Splitter.Split(fileStreamIn, sha1Provider, true)) {
                             if (stats.Canceled) {
                                 stats.Canceled = false;
+                                stats.EndTime  = null;
                                 return lastWorkingCopy;
                             }
                             WorkingHash hash = new WorkingHash() {

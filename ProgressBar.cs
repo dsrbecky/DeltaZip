@@ -23,7 +23,7 @@ namespace DeltaZip
         public void Bind(ArchiveWriter.Stats stats)
         {
             onTick = delegate {
-                this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
+                this.Text = stats.Title;
                 progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
                 textStatus.Text = stats.Status;
 
@@ -49,7 +49,7 @@ namespace DeltaZip
         public void Bind(ArchiveReader.Stats stats)
         {
             onTick = delegate {
-                this.Text = string.Format("{0:F0}% {1}", stats.Progress * 100, stats.Title);
+                this.Text = stats.Title;
                 progressBar1.Value = Math.Max(0, Math.Min(100, (int)(stats.Progress * 100)));
                 textStatus.Text = stats.Status;
 

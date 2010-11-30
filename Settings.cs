@@ -12,6 +12,7 @@ namespace DeltaZip
 
         public const string ArchiveExtension = ".dzp";
         public const string TmpExtension     = ".tmp";
+        public const string TmpDirectory     = ".DeltaZip";
         public const string StateFile        = ".DeltaZipState";
         public const string MetaDataDir      = ".Metadata";
         public const string MetaDataInfo     = "info";

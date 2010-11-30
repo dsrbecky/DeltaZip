@@ -67,7 +67,7 @@ namespace DeltaZip
             if (string.IsNullOrEmpty(dst)) throw new Exception("You have to specify Dst");
 
             // The destination is directory
-            if (!dst.ToLowerInvariant().EndsWith(Settings.ArchiveExtension.ToLowerInvariant())) {
+            if (!Settings.CreateMulti && !dst.ToLowerInvariant().EndsWith(Settings.ArchiveExtension.ToLowerInvariant())) {
                 dst = Path.Combine(dst, Path.GetFileName(src) + Settings.ArchiveExtension);
             }
 
@@ -98,6 +98,7 @@ namespace DeltaZip
                 string dstBase = dst;
                 foreach (string subDir in Directory.GetDirectories(src)) {
                     dst = Path.Combine(dstBase, Path.GetFileName(subDir)) + Settings.ArchiveExtension;
+                    stats.Title = Path.GetFileName(dst);
                     string tmpName = dst + Settings.TmpExtension;
                     ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
                     archive.AddDir(subDir, reference);
@@ -116,6 +117,7 @@ namespace DeltaZip
                     }
                 }
             } else {
+                stats.Title = Path.GetFileName(dst);
                 string tmpName = dst + Settings.TmpExtension;
                 Directory.CreateDirectory(Path.GetDirectoryName(tmpName));
                 ArchiveWriter archive = new ArchiveWriter(tmpName, stats);

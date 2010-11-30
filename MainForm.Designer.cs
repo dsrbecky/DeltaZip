@@ -46,6 +46,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.createRefAuto = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.labelMOTD = new System.Windows.Forms.Label();
             this.extractDst = new System.Windows.Forms.ComboBox();
             this.extractBtn = new System.Windows.Forms.Button();
             this.extractSrc = new System.Windows.Forms.ComboBox();
@@ -58,7 +59,6 @@
             this.verifySrc = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.verifySrcSelect = new System.Windows.Forms.Button();
-            this.labelMOTD = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -266,6 +266,17 @@
             this.tabPage2.Text = "Extract archive";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // labelMOTD
+            // 
+            this.labelMOTD.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelMOTD.Location = new System.Drawing.Point(10, 73);
+            this.labelMOTD.Name = "labelMOTD";
+            this.labelMOTD.Size = new System.Drawing.Size(594, 136);
+            this.labelMOTD.TabIndex = 15;
+            this.labelMOTD.Text = "Message of the day";
+            // 
             // extractDst
             // 
             this.extractDst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
@@ -390,17 +401,6 @@
             this.verifySrcSelect.Text = "...";
             this.verifySrcSelect.UseVisualStyleBackColor = true;
             this.verifySrcSelect.Click += new System.EventHandler(this.verifySrcSelect_Click);
-            // 
-            // labelMOTD
-            // 
-            this.labelMOTD.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelMOTD.Location = new System.Drawing.Point(10, 66);
-            this.labelMOTD.Name = "labelMOTD";
-            this.labelMOTD.Size = new System.Drawing.Size(594, 143);
-            this.labelMOTD.TabIndex = 15;
-            this.labelMOTD.Text = "Destination:";
             // 
             // MainForm
             // 

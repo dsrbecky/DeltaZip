@@ -144,6 +144,8 @@ namespace DeltaZip
 
         public static bool Extract(string archiveFilename, string destination, Stats stats)
         {
+            stats.Title = Path.GetFileName(archiveFilename);
+
             ArchiveReader archive = new ArchiveReader(archiveFilename, stats);
 
             bool writeEnabled = (destination != null);
@@ -155,10 +157,14 @@ namespace DeltaZip
             IAsyncResult openFileRead = null;
             string       openFilePathLC = null;
 
+            long totalSize = 0;
+            long totalSizeDone = 0;
+
             // Setup cache
             Dictionary<string, ExtractedData> dataCache = new Dictionary<string, ExtractedData>();
             int time = 0;
             foreach (File file in archive.files) {
+                totalSize += file.Size;
                 foreach (int hashIndex in file.HashIndices) {
                     if (stats.Canceled) return false;
 
@@ -172,7 +178,7 @@ namespace DeltaZip
 
             stats.Status = "Loading working copy state";
             WorkingCopy workingCopy = writeEnabled ? WorkingCopy.Load(stateFile) : new WorkingCopy();
-            List<WorkingFile> newWorkingFiles = new List<WorkingFile>();
+            WorkingCopy newWorkingFiles = new WorkingCopy();
             List<WorkingHash> oldWorkingHashes = new List<WorkingHash>();
             if (writeEnabled) {
                 int oldCount = workingCopy.Count;
@@ -193,7 +199,7 @@ namespace DeltaZip
 
             string tmpPath = null;
             if (writeEnabled) {
-                tmpPath = Path.Combine(destination, ".deltazip");
+                tmpPath = Path.Combine(destination, Settings.TmpDirectory);
                 Directory.CreateDirectory(tmpPath);
             }
 
@@ -219,6 +225,7 @@ namespace DeltaZip
                             workingFile.UserModified = false;
                             newWorkingFiles.Add(workingFile);
                             stats.Unmodified += file.Size;
+                            totalSizeDone += file.Size;
                             continue;
                         }
                     }
@@ -240,7 +247,6 @@ namespace DeltaZip
 
                 try {
                     stats.Progress = 0;
-                    stats.Title = Path.GetFileName(file.Name);
                     stats.Status = (writeEnabled ? "Extracting " : "Verifying ") + file.Name;
 
                     SHA1CryptoServiceProvider sha1Provider = new SHA1CryptoServiceProvider();
@@ -374,7 +380,9 @@ namespace DeltaZip
                         sha1Provider.TransformBlock(writeItem.MemStream.GetBuffer(), (int)writeItem.Offset, writeItem.Length, writeItem.MemStream.GetBuffer(), (int)writeItem.Offset);
 
                         stats.TotalWritten += writeItem.Length;
+                        totalSizeDone += writeItem.Length;
 
+                        stats.Title = string.Format("{0:F0}% {1}", 100 * (float)totalSizeDone / (float)totalSize , Path.GetFileName(archiveFilename));
                         stats.Progress = (float)i / (float)file.HashIndices.Count;
 
                         // Unload if it is not needed anymore
@@ -444,6 +452,7 @@ namespace DeltaZip
             }
 
             stats.Progress = 0;
+            stats.Title = string.Format("100% {0}", Path.GetFileName(archiveFilename));
 
             // Close sources
             foreach (ZipFile zip in openZips.Values) {
@@ -460,15 +469,18 @@ namespace DeltaZip
 
                 stats.Status = "Preparing to move files";
 
-                // Delete all non-modified files which are not part of the new set
+                // Delete all non-user-modified files
                 foreach (WorkingFile workingFile in workingCopy.GetAll()) {
-                    if (!workingFile.UserModified && !newWorkingFiles.Contains(workingFile)) {
+                    if (!workingFile.UserModified && workingFile.ExistsOnDisk() && !workingFile.IsModifiedOnDisk()) {
+                        WorkingFile newWF = newWorkingFiles.Find(workingFile.NameLowercase);
+                        // Do not delete if it is was skipped 'fast-path' file
+                        if (newWF != null && newWF.TempFileName == null) continue;
                         deleteFilesLC.Add(workingFile.NameLowercase);
                     }
                 }
 
                 // Find obstructions for new files
-                foreach (WorkingFile newWorkingFile in newWorkingFiles) {
+                foreach (WorkingFile newWorkingFile in newWorkingFiles.GetAll()) {
                     if (newWorkingFile.TempFileName != null && newWorkingFile.ExistsOnDisk() && !deleteFilesLC.Contains(newWorkingFile.NameLowercase)) {
                         deleteFilesAskLC.Add(newWorkingFile.NameLowercase);
                     }
@@ -506,6 +518,10 @@ namespace DeltaZip
                     stats.Status = "Deleting " + Path.GetFileName(deleteFileLC);
                     while (true) {
                         try {
+                            FileInfo fileInfo = new FileInfo(deleteFileLC);
+                            if (fileInfo.IsReadOnly) {
+                                fileInfo.IsReadOnly = false;
+                            }
                             System.IO.File.Delete(deleteFileLC);
                             workingCopy.Remove(deleteFileLC);
                             break;
@@ -522,7 +538,7 @@ namespace DeltaZip
                 }
 
                 // Move the new files
-                foreach (WorkingFile newWorkingFile in newWorkingFiles) {
+                foreach (WorkingFile newWorkingFile in newWorkingFiles.GetAll()) {
                     if (!keepFilesLC.Contains(newWorkingFile.NameLowercase) && newWorkingFile.TempFileName != null) {
                         stats.Status = "Moving " + Path.GetFileName(newWorkingFile.NameMixedcase);
                         while (true) {

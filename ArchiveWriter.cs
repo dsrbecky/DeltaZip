@@ -135,7 +135,6 @@ namespace DeltaZip
         {
             string fullFilename = Path.Combine(root, filename);
             using (FileStream fileStreamIn = new FileStream(fullFilename, FileMode.Open, FileAccess.Read, FileShare.Read, Settings.FileStreamBufferSize, true)) {
-                stats.Title = Path.GetFileName(filename);
                 stats.Status = "Compressing " + filename;
                 stats.Progress = 0;
 
@@ -295,7 +294,6 @@ namespace DeltaZip
             hashesLookup = new Dictionary<Hash, int>();
             stringsLookup = new Dictionary<string, int>();
 
-            stats.Title = "";
             stats.Status = "Writing metadata";
             stats.Progress = 0;
 
