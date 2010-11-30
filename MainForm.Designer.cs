@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.createRef = new System.Windows.Forms.ComboBox();
@@ -258,7 +259,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(534, 212);
+            this.tabPage2.Size = new System.Drawing.Size(622, 212);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Extract archive";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -270,13 +271,13 @@
             this.extractDst.FormattingEnabled = true;
             this.extractDst.Location = new System.Drawing.Point(75, 32);
             this.extractDst.Name = "extractDst";
-            this.extractDst.Size = new System.Drawing.Size(336, 21);
+            this.extractDst.Size = new System.Drawing.Size(424, 21);
             this.extractDst.TabIndex = 14;
             // 
             // extractBtn
             // 
             this.extractBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractBtn.Location = new System.Drawing.Point(441, 5);
+            this.extractBtn.Location = new System.Drawing.Point(529, 5);
             this.extractBtn.Name = "extractBtn";
             this.extractBtn.Size = new System.Drawing.Size(75, 23);
             this.extractBtn.TabIndex = 0;
@@ -291,7 +292,7 @@
             this.extractSrc.FormattingEnabled = true;
             this.extractSrc.Location = new System.Drawing.Point(75, 6);
             this.extractSrc.Name = "extractSrc";
-            this.extractSrc.Size = new System.Drawing.Size(336, 21);
+            this.extractSrc.Size = new System.Drawing.Size(424, 21);
             this.extractSrc.TabIndex = 13;
             // 
             // label4
@@ -306,7 +307,7 @@
             // extractDstSelect
             // 
             this.extractDstSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractDstSelect.Location = new System.Drawing.Point(411, 31);
+            this.extractDstSelect.Location = new System.Drawing.Point(499, 31);
             this.extractDstSelect.Name = "extractDstSelect";
             this.extractDstSelect.Size = new System.Drawing.Size(24, 23);
             this.extractDstSelect.TabIndex = 12;
@@ -317,7 +318,7 @@
             // extractSrcSelect
             // 
             this.extractSrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.extractSrcSelect.Location = new System.Drawing.Point(411, 5);
+            this.extractSrcSelect.Location = new System.Drawing.Point(499, 5);
             this.extractSrcSelect.Name = "extractSrcSelect";
             this.extractSrcSelect.Size = new System.Drawing.Size(24, 23);
             this.extractSrcSelect.TabIndex = 9;
@@ -342,7 +343,7 @@
             this.tabPage3.Controls.Add(this.verifySrcSelect);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(534, 212);
+            this.tabPage3.Size = new System.Drawing.Size(622, 212);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Verify archive";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -350,7 +351,7 @@
             // verifyBtn
             // 
             this.verifyBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.verifyBtn.Location = new System.Drawing.Point(441, 5);
+            this.verifyBtn.Location = new System.Drawing.Point(529, 5);
             this.verifyBtn.Name = "verifyBtn";
             this.verifyBtn.Size = new System.Drawing.Size(75, 23);
             this.verifyBtn.TabIndex = 14;
@@ -365,7 +366,7 @@
             this.verifySrc.FormattingEnabled = true;
             this.verifySrc.Location = new System.Drawing.Point(75, 6);
             this.verifySrc.Name = "verifySrc";
-            this.verifySrc.Size = new System.Drawing.Size(336, 21);
+            this.verifySrc.Size = new System.Drawing.Size(424, 21);
             this.verifySrc.TabIndex = 17;
             // 
             // label7
@@ -380,7 +381,7 @@
             // verifySrcSelect
             // 
             this.verifySrcSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.verifySrcSelect.Location = new System.Drawing.Point(411, 5);
+            this.verifySrcSelect.Location = new System.Drawing.Point(499, 5);
             this.verifySrcSelect.Name = "verifySrcSelect";
             this.verifySrcSelect.Size = new System.Drawing.Size(24, 23);
             this.verifySrcSelect.TabIndex = 16;
@@ -394,6 +395,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(645, 254);
             this.Controls.Add(this.tabControl1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "Delta Zip";
             this.tabControl1.ResumeLayout(false);

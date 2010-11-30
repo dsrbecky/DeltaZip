@@ -43,12 +43,12 @@ namespace DeltaZip
 
         public static FileAttributes IgnoreAttributes = FileAttributes.Archive;
         
-        public static int SplitterBlockSize = 16 * 1024;
+        public static int BlockSize = 16 * 1024;
         public static int SplitterReadBufferSize = 1 * 1024 * 1024;
         public static bool AsyncWrite = true;
-        public static int MaxZipEntrySize = 2 * 1024 * 1024 + 4 * SplitterBlockSize;
+        public static int MaxZipEntrySize = 2 * 1024 * 1024 + 4 * BlockSize;
         public static int MinSizeForParallelDeflate = 128 * 1024;
-        public static int FileStreamBufferSize = 64 * 1024;
+        public static int FileStreamBufferSize = 4 * 1024;
         public static int MaxQueuedWrites = 8;
         public static int WritePrefetchSize = 64 * 1024 * 1024;
         public static int WriteCacheSize = 512 * 1024 * 1024;

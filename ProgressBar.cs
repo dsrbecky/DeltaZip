@@ -31,7 +31,7 @@ namespace DeltaZip
                 TimeSpan time = (stats.EndTime ?? DateTime.Now) - stats.StartTime;
                 labelL1.Text = "Total processed:";          textL1.Text = FormatSize(total);
                 labelL2.Text = "Elapsed time:";             textL2.Text = string.Format("{0}:{1:D2}:{2:D2}", time.Hours, time.Minutes, time.Seconds);
-                labelL3.Text = "Block size:";               textL3.Text = FormatSize(Settings.SplitterBlockSize);
+                labelL3.Text = "Block size:";               textL3.Text = FormatSize(Settings.BlockSize);
                 labelL4.Text = "";                          textL4.Text = "";
                 labelR1.Text = "Compressed size:";          textR1.Text = FormatSize(stats.Compressed, total);
                 labelR2.Text = "Saved by compression:";     textR2.Text = FormatSize(stats.SavedByCompression, total);

@@ -62,7 +62,7 @@ namespace DeltaZip
 
         public static unsafe List<Block> Split(byte[] buffer, int offset, int length)
         {
-            int blockSize = Settings.SplitterBlockSize;
+            int blockSize = Settings.BlockSize;
             List<Block> blocks = new List<Block>(buffer.Length / blockSize * 3 / 2);
             int totalBlocksLength = 0;
 
