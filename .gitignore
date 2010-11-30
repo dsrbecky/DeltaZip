@@ -1,3 +1,5 @@
 /bin
 /obj
 /DeltaZip.csproj.*
+/DeltaZip.sln
+/DeltaZip.suo

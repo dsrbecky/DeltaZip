@@ -85,5 +85,10 @@ namespace DeltaZip
         {
             buttonCancel.PerformClick();
         }
+
+        private void ProgressBar_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }

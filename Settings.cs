@@ -13,7 +13,7 @@ namespace DeltaZip
         }
 
         public const int VersionMajor = 1;
-        public const int VersionMinor = 1;
+        public const int VersionMinor = 0;
 
         public static int Compression = 5;
         public static float CompressionTreshold = 0.80f;
@@ -29,7 +29,7 @@ namespace DeltaZip
         public static int SplitterBlockSize = 16 * 1024;
         public static int SplitterReadBufferSize = 1 * 1024 * 1024;
         public static bool AsyncWrite = true;
-        public static int MaxZipEntrySize = 2 * 1000 * 1000 + 16 * SplitterBlockSize;
+        public static int ZipEntrySize = 2 * 1024 * 1024;
         public static int MinSizeForParallelDeflate = 128 * 1024;
         public static int FileStreamBufferSize = 128 * 1024;
         public static int MaxQueuedWrites = 8;

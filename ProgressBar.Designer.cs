@@ -258,6 +258,7 @@
             this.MaximizeBox = false;
             this.Name = "ProgressBar";
             this.Text = "0%";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ProgressBar_FormClosed);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ProgressBar_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();

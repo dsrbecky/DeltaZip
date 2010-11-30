@@ -48,7 +48,9 @@ namespace DeltaZip
             FolderBrowserDialog dirDialog = new FolderBrowserDialog();
             if (dirDialog.ShowDialog() == DialogResult.OK) {
                 createSrc.Text = dirDialog.SelectedPath;
-                RefreshDstDir();
+                if (string.IsNullOrEmpty(createDst.Text)) {
+                    RefreshDstDir();
+                }
                 RefreshAutoReferenceIfNeeded();
             }
         }
@@ -146,7 +148,7 @@ namespace DeltaZip
         public void CreateDeltaArchive(string src, string dst, string refernceFilename)
         {
             ArchiveWriter.Stats stats = new ArchiveWriter.Stats();
-            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); this.Hide(); });
 
             Reference reference = null;
             if (!string.IsNullOrEmpty(refernceFilename)) {
@@ -214,7 +216,9 @@ namespace DeltaZip
             openDlg.Filter = Filter;
             if (openDlg.ShowDialog() == DialogResult.OK) {
                 extractSrc.Text = openDlg.FileName;
-                extractDst.Text = Path.Combine(Path.GetDirectoryName(extractSrc.Text), Path.GetFileNameWithoutExtension(extractSrc.Text));
+                if (string.IsNullOrEmpty(extractDst.Text)) {
+                    extractDst.Text = Path.Combine(Path.GetDirectoryName(extractSrc.Text), Path.GetFileNameWithoutExtension(extractSrc.Text));
+                }
             }
         }
 
@@ -238,7 +242,7 @@ namespace DeltaZip
         void Extract(string filename, string destination)
         {
             ArchiveReader.Stats stats = new ArchiveReader.Stats();
-            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); this.Hide(); });
 
             ArchiveReader.Extract(filename, destination, stats);
         }
@@ -263,7 +267,7 @@ namespace DeltaZip
         void Verify(string filename)
         {
             ArchiveReader.Stats stats = new ArchiveReader.Stats();
-            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); });
+            Invoke((MethodInvoker)delegate { new ProgressBar(stats).Show(); this.Hide(); });
 
             ArchiveReader.Extract(filename, null, stats);
         }

@@ -238,7 +238,7 @@ namespace DeltaZip
                         return stream;
                     }
                 }
-                return new MemoryStream(Settings.MaxZipEntrySize);
+                return new MemoryStream(Settings.ZipEntrySize + 4 * Settings.SplitterBlockSize);
             }
         }
 
