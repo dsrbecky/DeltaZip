@@ -92,7 +92,7 @@ namespace DeltaZip
                 foreach (string subDir in Directory.GetDirectories(src)) {
                     dst = Path.Combine(dstBase, Path.GetFileName(subDir)) + Settings.ArchiveExtension;
                     stats.Title = Path.GetFileName(dst);
-                    string tmpName = dst + Settings.TmpExtension;
+                    string tmpName = dst + Settings.TmpExtension + new Random().Next();
                     ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
                     archive.AddDir(subDir, reference);
                     reference = archive.Finish(Path.GetFileName(dst));
@@ -111,7 +111,7 @@ namespace DeltaZip
                 }
             } else {
                 stats.Title = Path.GetFileName(dst);
-                string tmpName = dst + Settings.TmpExtension;
+                string tmpName = dst + Settings.TmpExtension + new Random().Next();
                 Directory.CreateDirectory(Path.GetDirectoryName(tmpName));
                 ArchiveWriter archive = new ArchiveWriter(tmpName, stats);
                 archive.AddDir(src, reference);

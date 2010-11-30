@@ -500,7 +500,7 @@ namespace DeltaZip
                     }
                 }
                 if (deleteFilesAskLC.Count > 0) {
-                    DialogResult overrideAnswer = MessageBox.Show(sb.ToString(), "Override files", MessageBoxButtons.YesNoCancel);
+                    DialogResult overrideAnswer = Settings.AlwaysOverwrite ? DialogResult.Yes : MessageBox.Show(sb.ToString(), "Override files", MessageBoxButtons.YesNoCancel);
                     if (overrideAnswer == DialogResult.Cancel) {
                         stats.Status = "Canceled.  No files were modified.";
                         return false;

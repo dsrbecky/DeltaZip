@@ -25,6 +25,7 @@ namespace DeltaZip
         public static bool Extract;
         public static bool Verify;
         public static bool AutoQuit;
+        public static bool AlwaysOverwrite;
 
         public static string Src;
         public static string Dst;
